@@ -11,7 +11,7 @@ export default async function Home() {
   });
 
   return (
-    <Layout rawPageData={data}>
+    <Layout rawPageData={data} hideChrome>
       <ClientPage {...data} />
     </Layout>
   );

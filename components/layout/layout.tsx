@@ -6,9 +6,10 @@ import { Footer } from "./nav/footer";
 
 type LayoutProps = PropsWithChildren & {
   rawPageData?: any;
+  hideChrome?: boolean;
 };
 
-export default async function Layout({ children, rawPageData }: LayoutProps) {
+export default async function Layout({ children, rawPageData, hideChrome = false }: LayoutProps) {
   const { data: globalData } = await client.queries.global({
     relativePath: "index.json",
   },
@@ -23,11 +24,11 @@ export default async function Layout({ children, rawPageData }: LayoutProps) {
 
   return (
     <LayoutProvider globalSettings={globalData.global} pageData={rawPageData}>
-      <Header />
-      <main className="overflow-x-hidden pt-20">
+      {!hideChrome && <Header />}
+      <main className={hideChrome ? "overflow-x-hidden" : "overflow-x-hidden pt-20"}>
         {children}
       </main>
-      <Footer />
+      {!hideChrome && <Footer />}
     </LayoutProvider>
   );
 }

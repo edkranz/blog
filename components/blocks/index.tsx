@@ -8,6 +8,8 @@ import { Video } from "./video";
 import { Callout } from "./callout";
 import { Stats } from "./stats";
 import { CallToAction } from "./call-to-action";
+import { Liquid } from "./liquid";
+import { ProfileCard } from "./profile-card";
 
 export const Blocks = (props: Omit<Page, "id" | "_sys" | "_values">) => {
   if (!props.blocks) return null;
@@ -25,24 +27,16 @@ export const Blocks = (props: Omit<Page, "id" | "_sys" | "_values">) => {
 };
 
 const Block = (block: PageBlocks) => {
-  switch (block.__typename) {
-    case "PageBlocksVideo":
-      return <Video data={block} />;
-    case "PageBlocksHero":
-      return <Hero data={block} />;
-    case "PageBlocksCallout":
-      return <Callout data={block} />;
-    case "PageBlocksStats":
-      return <Stats data={block} />;
-    case "PageBlocksContent":
-      return <Content data={block} />;
-    case "PageBlocksFeatures":
-      return <Features data={block} />;
-    case "PageBlocksTestimonial":
-      return <Testimonial data={block} />;
-    case "PageBlocksCta":
-      return <CallToAction data={block} />;
-    default:
-      return null;
-  }
+  const t = (block as any).__typename;
+  if (t === "PageBlocksLiquid") return <Liquid data={(block as any)} />;
+  if (t === "PageBlocksVideo") return <Video data={block as any} />;
+  if (t === "PageBlocksHero") return <Hero data={block as any} />;
+  if (t === "PageBlocksCallout") return <Callout data={block as any} />;
+  if (t === "PageBlocksStats") return <Stats data={block as any} />;
+  if (t === "PageBlocksContent") return <Content data={block as any} />;
+  if (t === "PageBlocksFeatures") return <Features data={block as any} />;
+  if (t === "PageBlocksTestimonial") return <Testimonial data={block as any} />;
+  if (t === "PageBlocksCta") return <CallToAction data={block as any} />;
+  if (t === "PageBlocksProfileCard") return <ProfileCard data={(block as any)} />;
+  return null;
 };

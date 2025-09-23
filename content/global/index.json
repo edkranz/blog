@@ -5,7 +5,7 @@
       "color": "orange",
       "style": "float"
     },
-    "name": "Tina Starter",
+    "name": "Eddie Kranz",
     "color": "default",
     "nav": [
       {
@@ -17,7 +17,7 @@
         "label": "About"
       },
       {
-        "href": "/posts",
+        "href": "/blog",
         "label": "Blog"
       }
     ]
@@ -28,30 +28,24 @@
         "icon": {
           "name": "FaLinkedin"
         },
-        "url": "https://www.linkedin.com/company/tinacms"
+        "url": "https://www.linkedin.com/in/kranz"
       },
       {
         "icon": {
           "name": "FaGithub"
         },
-        "url": "https://github.com/tinacms/tinacms"
+        "url": "https://github.com/edkranz"
       },
       {
         "icon": {
           "name": "FaYoutube"
         },
-        "url": "https://www.youtube.com/@TinaCMS"
-      },
-      {
-        "icon": {
-          "name": "FaXTwitter"
-        },
-        "url": "https://x.com/TinaCMS"
+        "url": "https://www.youtube.com/@eddiekranz"
       }
     ]
   },
   "theme": {
-    "color": "blue",
+    "color": "red",
     "font": "sans",
     "darkMode": "light"
   }

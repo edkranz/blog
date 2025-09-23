@@ -15,10 +15,10 @@ export const Footer = () => {
 
           <div className="order-last flex justify-center md:order-first md:justify-start">
             <Link href="/" aria-label="go home">
-              <Icon
+              {/* <Icon
                 parentColor={header!.color!}
                 data={header!.icon}
-              />
+              /> */}
             </Link>
             <span className="self-center text-muted-foreground text-sm ml-2">© {new Date().getFullYear()} {header?.name}, All rights reserved</span>
           </div>
