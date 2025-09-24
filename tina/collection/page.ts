@@ -9,6 +9,7 @@ import { statsBlockSchema } from '@/components/blocks/stats';
 import { ctaBlockSchema } from '@/components/blocks/call-to-action';
 import { liquidBlockSchema } from '@/components/blocks/liquid';
 import { profileCardBlockSchema } from '@/components/blocks/profile-card';
+import { businessCardBlockSchema } from '@/components/blocks/business-card';
 
 const Page: Collection = {
   label: 'Pages',
@@ -44,6 +45,7 @@ const Page: Collection = {
         videoBlockSchema,
         liquidBlockSchema,
         profileCardBlockSchema,
+        businessCardBlockSchema,
       ],
     },
   ],

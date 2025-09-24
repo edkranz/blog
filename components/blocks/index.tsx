@@ -10,6 +10,7 @@ import { Stats } from "./stats";
 import { CallToAction } from "./call-to-action";
 import { Liquid } from "./liquid";
 import { ProfileCard } from "./profile-card";
+import { BusinessCard } from "./business-card";
 
 export const Blocks = (props: Omit<Page, "id" | "_sys" | "_values">) => {
   if (!props.blocks) return null;
@@ -38,5 +39,6 @@ const Block = (block: PageBlocks) => {
   if (t === "PageBlocksTestimonial") return <Testimonial data={block as any} />;
   if (t === "PageBlocksCta") return <CallToAction data={block as any} />;
   if (t === "PageBlocksProfileCard") return <ProfileCard data={(block as any)} />;
+  if (t === "PageBlocksBusinessCard") return <BusinessCard data={(block as any)} />;
   return null;
 };

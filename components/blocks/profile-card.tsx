@@ -5,11 +5,14 @@ import type { Template } from 'tinacms';
 import { tinaField } from 'tinacms/dist/react';
 import { Icon } from '@/components/icon';
 import { iconSchema } from '@/tina/fields/icon';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 type ProfileCardProps = {
   data: {
     name?: string;
     subtitle?: string;
+    photo?: string;
     links?: { label?: string; href?: string }[];
     socials?: { icon?: { name?: string; color?: string; style?: string }; url?: string }[];
   };
@@ -23,27 +26,43 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ data }) => {
     { label: 'About', href: '/about' },
   ];
   const socials = data.socials || [];
+  const photo = data.photo || '/uploads/authors/eddie.jpg';
 
   return (
     <section className="min-h-[80vh] grid place-items-center">
-      <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-sm border border-zinc-900/10 dark:border-white/10 rounded-2xl shadow-sm px-8 py-10">
-        <h1 className="text-3xl md:text-4xl font-semibold text-center tracking-tight" data-tina-field={tinaField(data as any, 'name')}>
-          {name}
-        </h1>
+      <div className="bg-white/45 dark:bg-zinc-900/30 backdrop-blur-md ring-1 ring-black/5 dark:ring-white/10 rounded-2xl shadow-lg px-8 py-10">
+        <div className="mx-auto mb-6 size-28 overflow-hidden rounded-2xl ring-1 ring-black/10 dark:ring-white/10">
+          <Image src={photo} alt={name} width={224} height={224} className="size-28 object-cover" />
+        </div>
+        <div className="flex items-center justify-center">
+          <span className="inline-flex items-center justify-center rounded-2xl bg-white/30 dark:bg-zinc-900/30 px-5 py-2 backdrop-blur-xl ring-1 ring-white/25 dark:ring-white/10 shadow-sm shadow-black/10">
+            <h1
+              className="text-center text-4xl md:text-5xl font-light tracking-tight text-black/85 dark:text-white/85 drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)]"
+              style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 300 }}
+              data-tina-field={tinaField(data as any, 'name')}
+            >
+              {name}
+            </h1>
+          </span>
+        </div>
         {subtitle ? (
           <p className="text-muted-foreground mt-2 text-center" data-tina-field={tinaField(data as any, 'subtitle')}>
             {subtitle}
           </p>
         ) : null}
 
-        <div className="mt-6 flex items-center justify-center gap-6 text-sm">
+        <div className="mt-6 flex items-center justify-center gap-3 text-sm">
           {links?.map((l, i) => (
-            <React.Fragment key={`${l?.label}-${i}`}>
-              {i > 0 && <span aria-hidden className="text-muted-foreground/70">/</span>}
-              <Link href={l?.href || '#'} className="text-foreground hover:text-foreground transition-colors underline underline-offset-4 hover:no-underline" data-tina-field={tinaField(l as any)}>
-                {l?.label}
-              </Link>
-            </React.Fragment>
+            <Button
+              key={`${l?.label}-${i}`}
+              asChild
+              size="lg"
+              variant="outline"
+              className="rounded-xl bg-white/35 dark:bg-zinc-900/30 text-black/85 dark:text-white/85 backdrop-blur-xl ring-1 ring-white/25 dark:ring-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]"
+              data-tina-field={tinaField(l as any)}
+            >
+              <Link href={l?.href || '#'}>{l?.label}</Link>
+            </Button>
           ))}
         </div>
 
@@ -69,6 +88,7 @@ export const profileCardBlockSchema: Template = {
     defaultItem: {
       name: 'Eddie Kranz',
       subtitle: '',
+      photo: '/uploads/authors/eddie.jpg',
       links: [
         { label: 'Blog', href: '/blog' },
         { label: 'About', href: '/about' },
@@ -78,6 +98,7 @@ export const profileCardBlockSchema: Template = {
   fields: [
     { type: 'string', name: 'name', label: 'Name' },
     { type: 'string', name: 'subtitle', label: 'Subtitle' },
+    { type: 'image', name: 'photo', label: 'Photo' },
     {
       type: 'object',
       name: 'links',
