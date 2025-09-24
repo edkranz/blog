@@ -269,7 +269,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
 
           {tagline && (
             <div className="mt-6 pt-4 border-t border-white/20 dark:border-white/10">
-              <p className="text-xs text-muted-foreground" data-tina-field={tinaField(data as any, 'tagline')}>{tagline}</p>
+              <p className="text-xs text-foreground" data-tina-field={tinaField(data as any, 'tagline')}>{tagline}</p>
             </div>
           )}
         </div>
