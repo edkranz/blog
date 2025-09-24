@@ -16,7 +16,7 @@ export const Header = () => {
     <header>
       <nav
         data-state={menuState && "active"}
-        className="fixed inset-x-0 top-0 z-50 w-full bg-black text-white"
+        className="fixed inset-x-0 top-0 z-50 w-full text-white backdrop-blur-xl bg-black/30 ring-1 ring-white/15"
       >
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="relative flex flex-wrap items-center justify-between gap-4 py-3 lg:gap-0 lg:py-4">
@@ -68,7 +68,7 @@ export const Header = () => {
             {/* Mobile nav */}
             <div className="in-data-[state=active]:block mb-2 hidden w-full items-center justify-end lg:in-data-[state=active]:flex lg:mb-0 lg:w-fit">
               <div className="w-full lg:hidden">
-                <ul className="space-y-4 bg-black p-4 text-base font-mono">
+                <ul className="space-y-4 bg-black/60 backdrop-blur-xl ring-1 ring-white/15 rounded-2xl p-4 text-base font-mono">
                   {header.nav!.map((item, index) => (
                     <li key={index}>
                       <Link

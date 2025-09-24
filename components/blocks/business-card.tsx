@@ -37,7 +37,6 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   const [spinCount, setSpinCount] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [isExiting, setIsExiting] = React.useState(false);
-  const router = useRouter();
   
   const initials = data.initials || 'EK';
   const name = data.name || 'Eddie Kranz';
@@ -225,7 +224,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 asChild
                 data-tina-field={tinaField(data as any, 'blogUrl')}
               >
-                <Link href={blogUrl} prefetch onClick={(e) => { e.preventDefault(); setIsExiting(true); setTimeout(() => router.push(blogUrl), 220); }}>
+                <Link href={blogUrl} prefetch>
                   Blog
                 </Link>
               </Button>
