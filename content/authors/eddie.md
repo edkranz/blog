@@ -1,5 +1,5 @@
 ---
 name: Eddie
-avatar: /uploads/authors/eddie.png
+avatar: /uploads/authors/eddie.jpg
 ---
 
