@@ -43,6 +43,8 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    const canvasEl: HTMLCanvasElement = canvas;
+    const ctx2: CanvasRenderingContext2D = ctx as CanvasRenderingContext2D;
 
     let width = 0;
     let height = 0;
@@ -85,13 +87,13 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
     const balls: Ball[] = [];
 
     function setCanvasSize() {
-      const rect = canvas.getBoundingClientRect();
+      const rect = canvasEl.getBoundingClientRect();
       dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
       width = Math.floor(rect.width);
       height = Math.floor(rect.height);
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvasEl.width = Math.floor(width * dpr);
+      canvasEl.height = Math.floor(height * dpr);
+      ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function seedBalls() {
@@ -226,8 +228,8 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
     function lerp(a: number, b: number) { return (ISO_THRESHOLD - a) / (b - a); }
 
     function drawIsolines() {
-      ctx.strokeStyle = '#f8fafc';
-      ctx.lineWidth = 3;
+      ctx2.strokeStyle = '#f8fafc';
+      ctx2.lineWidth = 3;
       for (let i = 0; i < cols - 1; i++) {
         for (let j = 0; j < rows - 1; j++) {
           const x = i * RENDER_RESOLUTION;
@@ -245,18 +247,18 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
           const b = { x: x + RENDER_RESOLUTION, y: y + lerp(v10, v11) * RENDER_RESOLUTION };
           const c = { x: x + lerp(v01, v11) * RENDER_RESOLUTION, y: y + RENDER_RESOLUTION };
           const d = { x, y: y + lerp(v00, v01) * RENDER_RESOLUTION };
-          ctx.beginPath();
+          ctx2.beginPath();
           switch (state) {
-            case 1: case 14: ctx.moveTo(d.x, d.y); ctx.lineTo(c.x, c.y); break;
-            case 2: case 13: ctx.moveTo(c.x, c.y); ctx.lineTo(b.x, b.y); break;
-            case 3: case 12: ctx.moveTo(d.x, d.y); ctx.lineTo(b.x, b.y); break;
-            case 4: case 11: ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); break;
-            case 5: ctx.moveTo(d.x, d.y); ctx.lineTo(a.x, a.y); ctx.moveTo(c.x, c.y); ctx.lineTo(b.x, b.y); break;
-            case 6: case 9: ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y); break;
-            case 7: case 8: ctx.moveTo(d.x, d.y); ctx.lineTo(a.x, a.y); break;
-            case 10: ctx.moveTo(d.x, d.y); ctx.lineTo(c.x, c.y); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); break;
+            case 1: case 14: ctx2.moveTo(d.x, d.y); ctx2.lineTo(c.x, c.y); break;
+            case 2: case 13: ctx2.moveTo(c.x, c.y); ctx2.lineTo(b.x, b.y); break;
+            case 3: case 12: ctx2.moveTo(d.x, d.y); ctx2.lineTo(b.x, b.y); break;
+            case 4: case 11: ctx2.moveTo(a.x, a.y); ctx2.lineTo(b.x, b.y); break;
+            case 5: ctx2.moveTo(d.x, d.y); ctx2.lineTo(a.x, a.y); ctx2.moveTo(c.x, c.y); ctx2.lineTo(b.x, b.y); break;
+            case 6: case 9: ctx2.moveTo(a.x, a.y); ctx2.lineTo(c.x, c.y); break;
+            case 7: case 8: ctx2.moveTo(d.x, d.y); ctx2.lineTo(a.x, a.y); break;
+            case 10: ctx2.moveTo(d.x, d.y); ctx2.lineTo(c.x, c.y); ctx2.moveTo(a.x, a.y); ctx2.lineTo(b.x, b.y); break;
           }
-          ctx.stroke();
+          ctx2.stroke();
         }
       }
     }
@@ -265,15 +267,15 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
       if (!config.hideCursor) return;
       const color = isSucking ? '#ef4444' : (isSpawning ? '#22c55e' : '#f8fafc');
       if (isSucking) {
-        ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, KILL_RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
-        ctx.fill();
+        ctx2.beginPath();
+        ctx2.arc(mouse.x, mouse.y, KILL_RADIUS, 0, Math.PI * 2);
+        ctx2.fillStyle = 'rgba(239, 68, 68, 0.3)';
+        ctx2.fill();
       }
-      ctx.beginPath();
-      ctx.arc(mouse.x, mouse.y, 2, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
+      ctx2.beginPath();
+      ctx2.arc(mouse.x, mouse.y, 2, 0, Math.PI * 2);
+      ctx2.fillStyle = color;
+      ctx2.fill();
     }
 
     function animate() {
@@ -283,9 +285,9 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
       frameTimes.push(now);
       fps = frameTimes.length;
       if (fpsRef.current && config.showFps) fpsRef.current.textContent = `FPS: ${fps}`;
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = config.background;
-      ctx.fillRect(0, 0, width, height);
+      ctx2.clearRect(0, 0, width, height);
+      ctx2.fillStyle = config.background as string;
+      ctx2.fillRect(0, 0, width, height);
       applyCursorRepelForce();
       handleMouseInteractions();
       applyAttractionForces();
@@ -293,10 +295,10 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
         const b = balls[i];
         b.update();
         if (SHOW_BALLS) {
-          ctx.beginPath();
-          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-          ctx.fillStyle = b.color;
-          ctx.fill();
+          ctx2.beginPath();
+          ctx2.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx2.fillStyle = b.color as string;
+          ctx2.fill();
         }
       }
       handleCollisions();
@@ -311,7 +313,7 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
     }
 
     function onMouseMove(e: MouseEvent) {
-      const rect = canvas.getBoundingClientRect();
+      const rect = canvasEl.getBoundingClientRect();
       mouse.px = mouse.x;
       mouse.py = mouse.y;
       mouse.x = e.clientX - rect.left;
@@ -335,18 +337,18 @@ export const Liquid: React.FC<LiquidProps> = ({ data }) => {
     animate();
 
     window.addEventListener('resize', onResize);
-    canvas.addEventListener('mousemove', onMouseMove);
-    canvas.addEventListener('mousedown', onMouseDown);
-    canvas.addEventListener('mouseup', onMouseUp);
-    canvas.addEventListener('contextmenu', onContextMenu);
+    canvasEl.addEventListener('mousemove', onMouseMove);
+    canvasEl.addEventListener('mousedown', onMouseDown);
+    canvasEl.addEventListener('mouseup', onMouseUp);
+    canvasEl.addEventListener('contextmenu', onContextMenu);
 
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       window.removeEventListener('resize', onResize);
-      canvas.removeEventListener('mousemove', onMouseMove);
-      canvas.removeEventListener('mousedown', onMouseDown);
-      canvas.removeEventListener('mouseup', onMouseUp);
-      canvas.removeEventListener('contextmenu', onContextMenu);
+      canvasEl.removeEventListener('mousemove', onMouseMove);
+      canvasEl.removeEventListener('mousedown', onMouseDown);
+      canvasEl.removeEventListener('mouseup', onMouseUp);
+      canvasEl.removeEventListener('contextmenu', onContextMenu);
     };
   }, [config]);
 
