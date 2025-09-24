@@ -3,8 +3,11 @@ import * as React from 'react';
 import type { Template } from 'tinacms';
 import { tinaField } from 'tinacms/dist/react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Mail, Phone, Github, Linkedin, Globe, Youtube } from 'lucide-react';
+import { Mail, Phone, Github, Linkedin, Youtube } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 
 type BusinessCardProps = {
   data: {
@@ -33,6 +36,8 @@ type BusinessCardProps = {
 export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   const [spinCount, setSpinCount] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
+  const [isExiting, setIsExiting] = React.useState(false);
+  const router = useRouter();
   
   const initials = data.initials || 'EK';
   const name = data.name || 'Eddie Kranz';
@@ -87,16 +92,23 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   };
 
   return (
-    <section className="min-h-[80vh] flex items-center justify-center p-6">
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl p-8 bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl ring-1 ring-white/20 shadow-xl">
+    <section className="min-h-[80vh] flex items-center justify-center p-4 sm:p-6">
+      <motion.div
+        className="relative w-full max-w-md overflow-hidden rounded-3xl p-6 sm:p-8 bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl ring-1 ring-white/20 shadow-xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: 80 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+        style={{ translateX: isExiting ? 80 : 0, opacity: isExiting ? 0 : 1, transition: 'transform 0.25s ease, opacity 0.25s ease' }}
+      >
         <div className="pointer-events-none absolute inset-0 opacity-30">
-          <div className="absolute top-4 right-4 w-32 h-32 bg-gradient-to-br from-cyan-200 to-blue-300 dark:from-cyan-800 dark:to-blue-900 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-8 left-8 w-24 h-24 bg-gradient-to-br from-teal-200 to-cyan-300 dark:from-teal-800 dark:to-cyan-900 rounded-full blur-2xl animate-pulse [animation-delay:1000ms]" />
+          <div className="absolute top-3 right-3 w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-cyan-200 to-blue-300 dark:from-cyan-800 dark:to-blue-900 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-6 left-6 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-200 to-cyan-300 dark:from-teal-800 dark:to-cyan-900 rounded-full blur-2xl animate-pulse [animation-delay:1000ms]" />
         </div>
 
         <div className="relative z-10 text-left">
-          <div className="mb-6 flex items-start gap-4">
-            <div className="flex-1 flex flex-col justify-between h-20">
+          <div className="mb-6 flex flex-col-reverse sm:flex-row items-start gap-4">
+            <div className="flex-1 flex flex-col justify-between">
               <div className="flex-[2]">
                 <h1
                   className={`${getNameSize()} font-bold text-balance leading-tight`}
@@ -107,7 +119,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 </h1>
               </div>
               
-              <div className="flex-1 flex items-end">
+              <div className="flex-1 flex items-end mt-1">
                 <div 
                   className={`flex items-center gap-2 ${getTitleSize()} font-medium`}
                   style={{ color: titleColor || undefined }}
@@ -172,11 +184,11 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
             )}
           </div>
 
-          <div className="flex gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             {phone && (
               <a
                 href={`tel:${phone.replace(/\s+/g, '')}`}
-                className="rounded-xl px-4 py-3 flex items-center gap-3 text-sm font-medium text-foreground bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg ring-1 ring-white/25 hover:text-primary transition-colors group flex-1"
+                className="rounded-xl px-4 py-3 flex items-center gap-3 text-sm font-medium text-foreground bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg ring-1 ring-white/25 hover:text-primary transition-colors group w-full sm:flex-1"
                 data-tina-field={tinaField(data as any, 'phone')}
               >
                 <Phone className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
@@ -187,7 +199,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
             {email && (
               <a
                 href={`mailto:${email}`}
-                className="rounded-xl px-4 py-3 flex items-center gap-3 text-sm font-medium text-foreground bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg ring-1 ring-white/25 hover:text-primary transition-colors group flex-1"
+                className="rounded-xl px-4 py-3 flex items-center gap-3 text-sm font-medium text-foreground bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg ring-1 ring-white/25 hover:text-primary transition-colors group w-full sm:flex-1"
                 data-tina-field={tinaField(data as any, 'email')}
               >
                 <Mail className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
@@ -196,11 +208,11 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
             )}
           </div>
 
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
             {blogUrl && (
               <Button
                 variant="ghost"
-                className="rounded-xl px-4 h-12 bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg hover:text-white text-sm font-medium transition-all duration-150 ease-in-out"
+                className="rounded-xl px-4 h-12 bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg hover:text-white text-sm font-medium transition-all duration-150 ease-in-out w-full sm:w-auto"
                 style={{
                   '--hover-bg': blogColor,
                 } as React.CSSProperties & { '--hover-bg': string }}
@@ -213,13 +225,13 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 asChild
                 data-tina-field={tinaField(data as any, 'blogUrl')}
               >
-                <a href={blogUrl} target="_blank" rel="noopener noreferrer">
+                <Link href={blogUrl} prefetch onClick={(e) => { e.preventDefault(); setIsExiting(true); setTimeout(() => router.push(blogUrl), 220); }}>
                   Blog
-                </a>
+                </Link>
               </Button>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 justify-center sm:justify-end">
               {githubUrl && (
                 <Button
                   variant="ghost"
@@ -273,7 +285,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };

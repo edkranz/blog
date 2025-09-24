@@ -7,6 +7,9 @@ import { TinaMarkdown } from 'tinacms/dist/rich-text';
 import { PostQuery } from '@/tina/__generated__/types';
 import { useLayout } from '@/components/layout/layout-context';
 import { Section } from '@/components/layout/section';
+import { FloatingBackdrop } from '@/components/layout/floating-backdrop';
+import { GlassCard } from '@/components/ui/glass-card';
+import { motion } from 'motion/react';
 import { components } from '@/components/mdx-components';
 import ErrorBoundary from '@/components/error-boundary';
 
@@ -42,7 +45,10 @@ export default function PostClientPage(props: ClientPostProps) {
 
   return (
     <ErrorBoundary>
-      <Section>
+      <Section className='px-4'>
+        <FloatingBackdrop>
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 22 }}>
+        <GlassCard className='max-w-3xl mx-auto p-6 sm:p-8 ring-white/25 bg-white/40 dark:bg-slate-900/35'>
         <h2 data-tina-field={tinaField(post, 'title')} className={`w-full relative\tmb-8 text-6xl font-extrabold tracking-normal text-center title-font`}>
           <span className={`bg-clip-text text-transparent bg-linear-to-r ${titleColorClasses[theme!.color!]}`}>{post.title}</span>
         </h2>
@@ -111,6 +117,9 @@ export default function PostClientPage(props: ClientPostProps) {
             }}
           />
         </div>
+        </GlassCard>
+        </motion.div>
+        </FloatingBackdrop>
       </Section>
     </ErrorBoundary>
   );

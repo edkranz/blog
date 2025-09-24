@@ -1,6 +1,7 @@
 import Layout from '@/components/layout/layout';
 import client from '@/tina/__generated__/client';
 import PostsClientPage from '../posts/client-page';
+import { FloatingBackdrop } from '@/components/layout/floating-backdrop';
 
 export const revalidate = 300;
 
