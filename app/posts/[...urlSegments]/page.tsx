@@ -17,7 +17,7 @@ export default async function PostPage({
   });
 
   return (
-    <Layout rawPageData={data}>
+    <Layout rawPageData={data} hideFooter>
       <PostClientPage {...data} />
     </Layout>
   );
