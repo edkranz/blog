@@ -117,6 +117,30 @@ export default function PostClientPage(props: ClientPostProps) {
             }}
           />
         </div>
+        {post.author && (
+          <div className='mt-12 pt-8 border-t border-white/30'>
+            <h3 className='text-xl font-semibold mb-4'>About the author</h3>
+            <div className='flex items-start gap-4'>
+              {post.author.avatar && (
+                <Image
+                  priority={false}
+                  className='h-16 w-16 object-cover rounded-full shadow-xs'
+                  src={post.author.avatar}
+                  alt={post.author.name}
+                  width={256}
+                  height={256}
+                />
+              )}
+              <div>
+                <p className='font-medium'>{post.author.name}</p>
+                <p className='text-sm text-gray-700 dark:text-gray-300 mt-1'>
+                  Eddie Kranz is a developer at SSW. Learn more on his
+                  {' '}<a href='https://ssw.com.au/people/eddie-kranz' target='_blank' rel='noopener noreferrer' className='underline'>SSW profile</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         </GlassCard>
         </motion.div>
         </FloatingBackdrop>

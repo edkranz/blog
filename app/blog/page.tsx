@@ -30,7 +30,7 @@ export default async function BlogPage() {
   }
 
   return (
-    <Layout rawPageData={allPosts.data}>
+    <Layout rawPageData={allPosts.data} hideFooter>
       <PostsClientPage {...allPosts} />
     </Layout>
   );

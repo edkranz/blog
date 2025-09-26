@@ -10,9 +10,10 @@ import path from 'path';
 type LayoutProps = PropsWithChildren & {
   rawPageData?: any;
   hideChrome?: boolean;
+  hideFooter?: boolean;
 };
 
-export default async function Layout({ children, rawPageData, hideChrome = false }: LayoutProps) {
+export default async function Layout({ children, rawPageData, hideChrome = false, hideFooter = false }: LayoutProps) {
   const { data: globalData } = await client.queries.global({
     relativePath: "index.json",
   },
@@ -64,7 +65,7 @@ export default async function Layout({ children, rawPageData, hideChrome = false
             {children}
           </main>
         </RouteTransition>
-        {!hideChrome && <Footer />}
+        {!hideChrome && !hideFooter && <Footer />}
       </div>
     </LayoutProvider>
   );
