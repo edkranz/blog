@@ -9,7 +9,9 @@
     "start": "tinacms build && next start",
     "export": "npm run build && next export",
     "lint": "biome lint",
-    "dev:build": "next build"
+    "dev:build": "next build",
+    "test:login-fixes": "node scripts/test-login-fixes.js",
+    "admin": "echo 'Starting development server with login fixes...' && pnpm run dev"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
