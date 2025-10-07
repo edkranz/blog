@@ -106,7 +106,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
         </div>
 
         <div className="relative z-10 text-left">
-          <div className="mb-6 flex flex-col-reverse sm:flex-row items-start gap-4">
+          <div className={`mb-6 flex ${photo ? 'flex-col-reverse sm:flex-row' : 'flex-row'} items-start gap-4`}>
             <div className="flex-1 flex flex-col justify-between">
               <div className="flex-[2]">
                 <h1
@@ -157,7 +157,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
               </div>
             </div>
 
-            {photo ? (
+            {photo && (
               <div 
                 className="w-20 h-20 rounded-2xl overflow-hidden ring-1 ring-white/30 shadow-lg cursor-pointer hover:ring-2 hover:ring-white/50 hover:scale-105 transition-all duration-200"
                 style={{
@@ -168,17 +168,6 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 data-tina-field={tinaField(data as any, 'photo')}
               >
                 <Image src={photo} alt={name} width={160} height={160} className="w-20 h-20 object-cover" />
-              </div>
-            ) : (
-              <div 
-                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 dark:from-cyan-600 dark:to-blue-700 flex items-center justify-center text-white text-2xl font-bold shadow-lg cursor-pointer hover:ring-2 hover:ring-white/50 hover:scale-105 transition-all duration-200"
-                style={{
-                  transform: isAnimating ? `rotate(${360 * spinCount}deg)` : 'rotate(0deg)',
-                  transition: isAnimating ? `transform ${Math.max(0.4, 0.8 / spinCount)}s cubic-bezier(0.25, 0.46, 0.45, 0.94)` : 'transform 0.2s ease-out'
-                }}
-                onClick={handlePhotoClick}
-              >
-                <span data-tina-field={tinaField(data as any, 'initials')}>{initials}</span>
               </div>
             )}
           </div>
