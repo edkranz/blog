@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { TinaMarkdown } from 'tinacms/dist/rich-text';
 import { PostConnectionQuery, PostConnectionQueryVariables } from '@/tina/__generated__/types';
 import ErrorBoundary from '@/components/error-boundary';
-import { ArrowRight, UserRound } from 'lucide-react';
+import { ArrowRight, UserRound, Rss } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Section } from '@/components/layout/section';
 import { FloatingBackdrop } from '@/components/layout/floating-backdrop';
@@ -56,6 +56,17 @@ export default function PostsClientPage(props: ClientPostProps) {
             <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
               Discover the latest insights and tutorials about modern web development, UI design, and component-driven architecture.
             </p>
+            <div className="mt-6">
+              <a 
+                href="/feed.xml" 
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Rss className="size-4" />
+                Subscribe via RSS
+              </a>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {posts.map((post, idx) => (
