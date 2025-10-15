@@ -23,15 +23,16 @@ It was time-consuming and honestly, a bit tedious.
 
 ## Enter YakShaver
 
-I started using [SSW YakShaver](https://yakshaver.ai) to report bugs on my site. For those unfamiliar, YakShaver is an AI-powered tool that creates incredibly detailed Product Backlog Items (PBIs). And I mean *detailed*.
+I started using [SSW YakShaver](https://yakshaver.ai) to report bugs on my site. The process is almost too simple: I record a 15-second screen recording showing the bug, upload it to YakShaver, and within moments, it transforms that video into a comprehensive Product Backlog Item.
 
-When YakShaver analyzes my site at [tina.io](https://tina.io), it doesn't just say "button is broken" - it provides:
+And I mean *comprehensive*. When YakShaver analyzes that short video of my site at [tina.io](https://tina.io), it doesn't just say "button is broken" - it provides:
 - Exact reproduction steps
 - Expected vs actual behavior
 - Context about the user impact
 - Technical details about what's likely wrong
+- Timestamps of when the issue occurs in the video
 
-The PBIs are so comprehensive that they read like they were written by a senior developer who spent hours investigating the issue.
+The PBIs are so thorough that they read like they were written by a senior developer who spent hours investigating the issue. All from a 15-second video.
 
 ## The Magic: Cursor Background Agents
 
@@ -56,6 +57,23 @@ I just:
 4. Approve or request changes
 
 That's it. No local setup, no environment switching, no IDE at all if I don't need it.
+
+## The Motorbike Moment
+
+Let me give you a real example of how fast this workflow is.
+
+One morning, I was about to get on my motorbike to ride to work. Just before putting on my helmet, I spotted a bug on my site while checking it on my phone. In the old days, I would have either:
+- Forgotten about it by the time I got to work
+- Made a mental note and spent time reproducing it later
+- Delayed my commute to document it properly
+
+Instead, I pulled out my phone, recorded a 15-second video showing the bug, and uploaded it to YakShaver. While I was uploading, I got my helmet on. By the time I was starting my bike, YakShaver had generated the PBI and I'd handed it off to a Cursor background agent.
+
+Then I rode to work.
+
+When I arrived at the office, parked my bike, and sat down at my desk, there was a pull request waiting for me. The agent had analyzed the issue, made the fix, and created the PR. I opened the preview link, verified the fix worked, and approved it.
+
+BOOM. Bug found, fixed, and merged - all during my commute.
 
 ## The Results
 
