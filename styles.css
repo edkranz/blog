@@ -119,3 +119,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .bg-default {
+    @apply bg-white/75 dark:bg-black/60;
+  }
+  .prose {
+    @apply text-foreground prose-headings:text-foreground prose-p:text-foreground/90;
+  }
+  .dark .prose {
+    @apply prose-invert prose-headings:text-foreground prose-p:text-foreground/90;
+  }
+}

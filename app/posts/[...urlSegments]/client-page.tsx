@@ -91,25 +91,14 @@ export default function PostClientPage(props: ClientPostProps) {
                 priority={true}
                 src={post.heroImg}
                 alt={post.title}
-                className='absolute block mx-auto rounded-lg w-full h-auto blur-2xl brightness-150 contrast-[0.9] dark:brightness-150 saturate-200 opacity-50 dark:opacity-30 mix-blend-multiply dark:mix-blend-hard-light'
-                aria-hidden='true'
-                width={500}
-                height={500}
-                style={{ maxHeight: '25vh' }}
-              />
-              <Image
-                priority={true}
-                src={post.heroImg}
-                alt={post.title}
-                width={500}
-                height={500}
-                className='relative z-10 mb-14 mx-auto block rounded-lg w-full h-auto opacity-100'
-                style={{ maxWidth: '25vh' }}
+                width={1200}
+                height={630}
+                className='relative z-10 mb-10 mx-auto block rounded-2xl w-full h-auto'
               />
             </div>
           </div>
         )}
-        <div data-tina-field={tinaField(post, '_body')} className='prose dark:prose-dark w-full max-w-none'>
+        <div data-tina-field={tinaField(post, '_body')} className='prose w-full max-w-none'>
           <TinaMarkdown
             content={post._body}
             components={{
@@ -118,7 +107,7 @@ export default function PostClientPage(props: ClientPostProps) {
           />
         </div>
         {post.author && (
-          <div className='mt-12 pt-8 border-t border-white/30'>
+          <div className='mt-12 pt-8 border-t border-border'>
             <h3 className='text-xl font-semibold mb-4'>About the author</h3>
             <div className='flex items-start gap-4'>
               {post.author.avatar && (

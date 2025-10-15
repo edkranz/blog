@@ -65,7 +65,7 @@ export default function PostsClientPage(props: ClientPostProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04, type: 'spring', stiffness: 260, damping: 22 }}
               >
-                <GlassCard className="p-4 sm:p-5 ring-white/25 bg-white/40 dark:bg-slate-900/35">
+                <GlassCard className="p-4 sm:p-5 ring-white/25 bg-white/60 dark:bg-slate-900/50">
                   <div className="flex flex-col gap-4">
                     {post.heroImg && (
                       <Link href={post.url} className="block group">
@@ -88,7 +88,7 @@ export default function PostsClientPage(props: ClientPostProps) {
                         {post.title}
                       </Link>
                     </h3>
-                    <div className="text-muted-foreground">
+                    <div className="prose max-w-none">
                       <TinaMarkdown content={post.excerpt} />
                     </div>
                     <div className="mt-2 flex items-center gap-3 text-sm">
