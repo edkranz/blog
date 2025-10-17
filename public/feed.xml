@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Eddie Kranz Blog</title>
+        <link>https://eddiekranz.com</link>
+        <description>Insights and tutorials about modern web development, UI design, and component-driven architecture.</description>
+        <lastBuildDate>Thu, 16 Oct 2025 23:58:58 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>en</language>
+        <copyright>All rights reserved 2025, Eddie Kranz</copyright>
+        <item>
+            <title><![CDATA[How I Fix Bugs Without Opening an IDE]]></title>
+            <link>https://eddiekranz.com/posts/ai-bug-reporting-workflow</link>
+            <guid isPermaLink="false">https://eddiekranz.com/posts/ai-bug-reporting-workflow</guid>
+            <pubDate>Wed, 15 Oct 2025 14:00:00 GMT</pubDate>
+            <description><![CDATA[Discovering a workflow where AI reports bugs and AI fixes them - and I just review the results in pull request previews.
+]]></description>
+        </item>
+    </channel>
+</rss>
