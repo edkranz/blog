@@ -37,8 +37,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  overlay,
 }: {
   children: React.ReactNode;
+  overlay: React.ReactNode;
 }) {
   return (
     <html lang="en" className={cn(fontSans.variable, nunito.variable, lato.variable, playfairDisplay.variable)}>
@@ -57,6 +59,7 @@ export default function RootLayout({
         </Script>
         <VideoDialogProvider>
           {children}
+          {overlay}
           <VideoDialog />
         </VideoDialogProvider>
         <TailwindIndicator />

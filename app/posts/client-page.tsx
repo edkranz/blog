@@ -3,7 +3,6 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { TinaMarkdown } from 'tinacms/dist/rich-text';
 import { PostConnectionQuery, PostConnectionQueryVariables } from '@/tina/__generated__/types';
 import ErrorBoundary from '@/components/error-boundary';
 import { ArrowRight, Rss } from 'lucide-react';
@@ -82,9 +81,11 @@ export default function PostsClientPage(props: ClientPostProps) {
                       <h3 className="text-lg font-semibold sm:text-xl text-foreground dark:text-foreground group-hover:text-primary transition-colors">
                         {post.title}
                       </h3>
-                      <div className="text-foreground/85 dark:text-foreground/90 text-sm leading-relaxed flex-1">
-                        <TinaMarkdown content={post.excerpt} />
-                      </div>
+                      {post.excerpt && (
+                        <div className="text-foreground/85 dark:text-foreground/90 text-sm leading-relaxed flex-1">
+                          {post.excerpt}
+                        </div>
+                      )}
                       <div className="mt-auto pt-2 flex items-center gap-3 text-sm">
                         <span className="font-medium text-foreground/80 dark:text-foreground/90">{post.author.name}</span>
                         <span className="text-foreground/40 dark:text-foreground/50">•</span>

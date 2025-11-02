@@ -98,6 +98,7 @@ const Global: Collection = {
           label: "Primary Color",
           name: "color",
           ui: {
+            // @ts-ignore
             component: ColorPickerInput,
           },
         },
