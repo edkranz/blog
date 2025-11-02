@@ -28,23 +28,6 @@ export default function PostClientPage(props: ClientPostProps) {
   const { data } = useTina({ ...props });
   const post = data.post;
 
-  const findBrokenNodes = (node: any, path = ''): any[] => {
-    if (!node) return [];
-    if (node.type === 'text' && node.text === undefined) {
-      return [{ path, node }];
-    }
-    if (node.children) {
-      return node.children.flatMap((child: any, i: number) => 
-        findBrokenNodes(child, `${path}[${i}]`)
-      );
-    }
-    return [];
-  };
-
-  console.log('🐛 Debug: Checking for broken nodes...');
-  console.log('Broken nodes:', findBrokenNodes(post._body));
-  console.log('Full body structure:', JSON.stringify(post._body, null, 2));
-
   const date = new Date(post.date!);
   let formattedDate = '';
   if (!isNaN(date.getTime())) {
