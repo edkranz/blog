@@ -29,11 +29,11 @@ const Post: Collection = {
       uploadDir: () => "posts",
     },
     {
-      type: 'rich-text',
+      type: 'string',
       label: 'Excerpt',
       name: 'excerpt',
-      overrides: {
-        toolbar: ['bold', 'italic', 'link'],
+      ui: {
+        component: 'textarea',
       },
     },
     {
@@ -84,6 +84,12 @@ const Post: Collection = {
       },
     },
     {
+      type: 'boolean',
+      label: 'Hide from Blog List',
+      name: 'hideFromBlogList',
+      description: 'If checked, this post will not appear on the blog list page',
+    },
+    {
       type: 'object',
       label: 'Tags',
       name: 'tags',
@@ -114,6 +120,9 @@ const Post: Collection = {
       type: 'rich-text',
       label: 'Body',
       name: '_body',
+      parser: {
+        type: 'mdx',
+      },
       templates: [
         {
           name: 'BlockQuote',

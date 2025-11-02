@@ -2,7 +2,6 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import client from '@/tina/__generated__/client';
 import Layout from '@/components/layout/layout';
-import { Section } from '@/components/layout/section';
 import ClientPage from './client-page';
 
 export const revalidate = 300;
@@ -26,9 +25,7 @@ export default async function Page({
 
   return (
     <Layout rawPageData={data}>
-      <Section>
-        <ClientPage {...data} />
-      </Section>
+      <ClientPage {...data} />
     </Layout>
   );
 }
@@ -58,7 +55,8 @@ export async function generateStaticParams() {
       urlSegments: edge?.node?._sys.breadcrumbs || [],
     }))
     .filter((x) => x.urlSegments.length >= 1)
-    .filter((x) => !x.urlSegments.every((x) => x === 'home')); // exclude the home page
+    .filter((x) => !x.urlSegments.every((x) => x === 'home')) // exclude the home page
+    .filter((x) => x.urlSegments[0] !== 'about'); // exclude the about page (now a blog post)
 
   return params;
 }

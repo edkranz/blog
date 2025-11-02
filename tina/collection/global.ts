@@ -141,6 +141,14 @@ const Global: Collection = {
         },
       ],
     },
+    {
+      type: "image",
+      label: "Background Image",
+      name: "backgroundImage",
+      // @ts-ignore
+      uploadDir: () => "global",
+      description: "Background image displayed behind all pages",
+    },
   ],
 };
 

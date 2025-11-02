@@ -119,3 +119,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .font-playfair {
+    font-family: var(--font-playfair), serif;
+  }
+}

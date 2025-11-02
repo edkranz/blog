@@ -1,0 +1,8 @@
+{
+  "debug.javascript.unmapMissingSources": true,
+  "debug.javascript.breakOnConditionalError": true,
+  "debug.terminal.clearBeforeReusing": true,
+  "debug.console.wordWrap": false,
+  "debug.javascript.autoAttachFilter": "onlyWithFlag"
+}
+

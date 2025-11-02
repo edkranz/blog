@@ -19,7 +19,10 @@ export const Header = () => {
         className="fixed inset-x-0 top-0 z-50 w-full text-white backdrop-blur-xl bg-black/30 ring-1 ring-white/15"
       >
         <div className="mx-auto max-w-6xl px-4 md:px-6">
-          <div className="relative flex flex-wrap items-center justify-between gap-4 py-3 lg:gap-0 lg:py-4">
+          <div 
+            data-state={menuState && "active"}
+            className="relative flex flex-wrap items-center justify-between gap-0 py-3 lg:gap-0 lg:py-4 data-[state=active]:gap-6"
+          >
             <div className="flex w-full items-center justify-between gap-6">
               {/* Brand */}
               <Link
@@ -66,7 +69,10 @@ export const Header = () => {
             </div>
 
             {/* Mobile nav */}
-            <div className="in-data-[state=active]:block mb-2 hidden w-full items-center justify-end lg:in-data-[state=active]:flex lg:mb-0 lg:w-fit">
+            <div 
+              data-state={menuState && "active"}
+              className="w-full flex items-center justify-end overflow-hidden transition-all duration-300 ease-in-out lg:in-data-[state=active]:flex lg:mb-0 lg:w-fit max-h-0 opacity-0 -translate-y-2 data-[state=active]:max-h-96 data-[state=active]:opacity-100 data-[state=active]:translate-y-0"
+            >
               <div className="w-full lg:hidden">
                 <ul className="space-y-4 bg-black/60 backdrop-blur-xl ring-1 ring-white/15 rounded-2xl p-4 text-base font-mono">
                   {header.nav!.map((item, index) => (

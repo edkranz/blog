@@ -6,13 +6,12 @@ import { format } from 'date-fns';
 import { TinaMarkdown } from 'tinacms/dist/rich-text';
 import { PostConnectionQuery, PostConnectionQueryVariables } from '@/tina/__generated__/types';
 import ErrorBoundary from '@/components/error-boundary';
-import { ArrowRight, UserRound, Rss } from 'lucide-react';
+import { ArrowRight, Rss } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Section } from '@/components/layout/section';
 import { FloatingBackdrop } from '@/components/layout/floating-backdrop';
 import { GlassCard } from '@/components/ui/glass-card';
 import { motion } from 'motion/react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ClientPostProps {
   data: PostConnectionQuery;
@@ -21,7 +20,12 @@ interface ClientPostProps {
 }
 
 export default function PostsClientPage(props: ClientPostProps) {
-  const posts = props.data?.postConnection.edges!.map((postData) => {
+  const posts = props.data?.postConnection.edges!
+    .filter((postData) => {
+      const post = postData!.node!;
+      return !post.hideFromBlogList;
+    })
+    .map((postData) => {
     const post = postData!.node!;
     const date = new Date(post.date!);
     let formattedDate = '';
@@ -46,83 +50,49 @@ export default function PostsClientPage(props: ClientPostProps) {
 
   return (
     <ErrorBoundary>
-      <Section className="px-4">
+      <Section className="px-4 pt-4 pb-8 sm:pb-12">
         <FloatingBackdrop>
-        <div className="container flex flex-col items-center gap-10 sm:gap-14">
-          <div className="text-center">
-            <h2 className="mx-auto mb-6 text-pretty text-3xl font-semibold md:text-4xl lg:max-w-3xl">
-              Blog Posts
-            </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-              Discover the latest insights and tutorials about modern web development, UI design, and component-driven architecture.
-            </p>
-            <div className="mt-6">
-              <a 
-                href="/feed.xml" 
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Rss className="size-4" />
-                Subscribe via RSS
-              </a>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
             {posts.map((post, idx) => (
               <motion.div
                 key={post.id}
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04, type: 'spring', stiffness: 260, damping: 22 }}
+                className="w-full max-w-sm"
               >
-                <GlassCard className="p-4 sm:p-5 ring-white/25 bg-white/40 dark:bg-slate-900/35">
-                  <div className="flex flex-col gap-4">
-                    {post.heroImg && (
-                      <Link href={post.url} className="block group">
-                        <div className="aspect-[16/9] overflow-clip rounded-2xl ring-1 ring-white/20">
+                <Link href={post.url} className="block group">
+                  <GlassCard className="h-full p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(255,255,255,0.25)] dark:hover:shadow-[0_20px_50px_-12px_rgba(255,255,255,0.15)] hover:-translate-y-2 hover:scale-[1.02] cursor-pointer">
+                    <div className="flex flex-col gap-4 h-full">
+                      {post.heroImg && (
+                        <div className="aspect-square overflow-clip rounded-2xl ring-1 ring-white/30 dark:ring-white/10 shadow-md">
                           <Image
-                            width={533}
-                            height={300}
+                            width={400}
+                            height={400}
                             src={post.heroImg}
                             alt={post.title}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
                           />
                         </div>
-                      </Link>
-                    )}
-                    <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {post.tags?.map((tag) => <span key={tag}>{tag}</span>)}
-                    </div>
-                    <h3 className="text-lg font-semibold sm:text-xl">
-                      <Link href={post.url} className="hover:underline">
+                      )}
+                      <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider font-medium text-foreground/70 dark:text-foreground/80">
+                        {post.tags?.map((tag) => <span key={tag}>{tag}</span>)}
+                      </div>
+                      <h3 className="text-lg font-semibold sm:text-xl text-foreground dark:text-foreground group-hover:text-primary transition-colors">
                         {post.title}
-                      </Link>
-                    </h3>
-                    <div className="text-muted-foreground">
-                      <TinaMarkdown content={post.excerpt} />
+                      </h3>
+                      <div className="text-foreground/85 dark:text-foreground/90 text-sm leading-relaxed flex-1">
+                        <TinaMarkdown content={post.excerpt} />
+                      </div>
+                      <div className="mt-auto pt-2 flex items-center gap-3 text-sm">
+                        <span className="font-medium text-foreground/80 dark:text-foreground/90">{post.author.name}</span>
+                        <span className="text-foreground/40 dark:text-foreground/50">•</span>
+                        <span className="text-foreground/80 dark:text-foreground/90">{post.published}</span>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center gap-3 text-sm">
-                      <Avatar>
-                        {post.author.avatar && (
-                          <AvatarImage src={post.author.avatar} alt={post.author.name} className="h-8 w-8" />
-                        )}
-                        <AvatarFallback>
-                          <UserRound size={16} strokeWidth={2} className="opacity-60" aria-hidden="true" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-muted-foreground">{post.author.name}</span>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-muted-foreground">{post.published}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Link href={post.url} className="inline-flex items-center font-semibold hover:underline">
-                        <span>Read more</span>
-                        <ArrowRight className="ml-2 size-4 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </GlassCard>
+                  </GlassCard>
+                </Link>
               </motion.div>
             ))}
           </div>

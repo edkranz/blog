@@ -10,8 +10,8 @@ export function RouteTransition({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     const prev = previousPathRef.current;
-    const goingToBlog = pathname.startsWith('/blog') || pathname.startsWith('/posts');
-    const cameFromNonBlog = !(prev.startsWith('/blog') || prev.startsWith('/posts'));
+    const goingToBlog = pathname.startsWith('/blog') || pathname.startsWith('/posts') || pathname === '/about';
+    const cameFromNonBlog = !(prev.startsWith('/blog') || prev.startsWith('/posts') || prev === '/about');
     setDirection(goingToBlog && cameFromNonBlog ? 'blog' : 'default');
     previousPathRef.current = pathname;
   }, [pathname]);
