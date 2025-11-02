@@ -1,9 +1,13 @@
 ---
 title: How I Fix Bugs Without Opening an IDE
 heroImg: null
-excerpt: Discovering a workflow where AI reports bugs and AI fixes them - and I just review the results in pull request previews.
+excerpt: >-
+  Discovering a workflow where AI reports bugs and AI fixes them - and I just
+  review the results in pull request previews.
 author: content/authors/eddie.md
 date: 2025-10-15T14:00:00.000Z
+tags:
+  - tag: content/tags/tinacms.mdx
 ---
 
 I've stumbled onto a workflow that feels like the future of development, and I had to share it. It's a combination of two AI tools that work together so seamlessly, I barely need to open my IDE anymore.
@@ -11,6 +15,7 @@ I've stumbled onto a workflow that feels like the future of development, and I h
 ## The Problem
 
 Like many developers, I have a running list of bugs and improvements for my Tina website. The traditional workflow meant:
+
 1. Manually testing and documenting bugs
 2. Writing detailed reproduction steps
 3. Opening my IDE
@@ -25,11 +30,12 @@ It was time-consuming and honestly, a bit tedious.
 I started using [SSW YakShaver](https://yakshaver.ai) to report bugs on my site. The process is almost too simple: I record a 15-second screen recording showing the bug, upload it to YakShaver, and within moments, it transforms that video into a comprehensive Product Backlog Item.
 
 And I mean *comprehensive*. When YakShaver analyzes that short video of my site at [tina.io](https://tina.io), it doesn't just say "button is broken" - it provides:
-- Exact reproduction steps
-- Expected vs actual behavior
-- Context about the user impact
-- Technical details about what's likely wrong
-- Timestamps of when the issue occurs in the video
+
+* Exact reproduction steps
+* Expected vs actual behavior
+* Context about the user impact
+* Technical details about what's likely wrong
+* Timestamps of when the issue occurs in the video
 
 The PBIs are so thorough that they read like they were written by a senior developer who spent hours investigating the issue. All from a 15-second video.
 
@@ -38,10 +44,11 @@ The PBIs are so thorough that they read like they were written by a senior devel
 Here's where it gets interesting. I take those detailed PBIs from YakShaver and feed them directly to Cursor's background agents. These agents work autonomously - no hand-holding required.
 
 Because YakShaver's PBIs are so thorough, Cursor background agents often get it right on the first try. The agents:
-- Understand the context immediately
-- Make the necessary code changes
-- Follow best practices
-- Create a working solution
+
+* Understand the context immediately
+* Make the necessary code changes
+* Follow best practices
+* Create a working solution
 
 All while I'm doing something else entirely.
 
@@ -50,6 +57,7 @@ All while I'm doing something else entirely.
 Now here's my favorite part: Tina has pull request previews. This means when a Cursor background agent finishes its work, I don't even need to open my IDE to check it.
 
 I just:
+
 1. Get a notification that the PR is ready
 2. Open the preview link
 3. Test the fix in the live preview environment
@@ -62,9 +70,10 @@ That's it. No local setup, no environment switching, no IDE at all if I don't ne
 Let me give you a real example of how fast this workflow is.
 
 One morning, I was about to get on my motorbike to ride to work. Just before putting on my helmet, I spotted a bug on my site while checking it on my phone. In the old days, I would have either:
-- Forgotten about it by the time I got to work
-- Made a mental note and spent time reproducing it later
-- Delayed my commute to document it properly
+
+* Forgotten about it by the time I got to work
+* Made a mental note and spent time reproducing it later
+* Delayed my commute to document it properly
 
 Instead, I pulled out my phone, recorded a 15-second video showing the bug, and uploaded it to YakShaver. While I was uploading, I got my helmet on. By the time I was starting my bike, YakShaver had generated the PBI and I'd handed it off to a Cursor background agent.
 
@@ -83,15 +92,17 @@ The quality is surprisingly high too. When you combine YakShaver's detailed prob
 ## What This Means for Development
 
 I think this workflow hints at where software development is heading. We're moving from:
-- Writing every line of code ourselves → Reviewing AI-generated solutions
-- Manually documenting bugs → AI analyzing and documenting issues
-- Local development environments → Cloud-based preview environments
+
+* Writing every line of code ourselves → Reviewing AI-generated solutions
+* Manually documenting bugs → AI analyzing and documenting issues
+* Local development environments → Cloud-based preview environments
 
 The role of a developer is evolving. Less typing, more thinking. Less executing, more directing. Less time in the IDE, more time understanding problems and validating solutions.
 
 ## Try It Yourself
 
 If you're maintaining a Tina site (or really any website), I'd encourage you to try this workflow:
+
 1. Point YakShaver at your site and let it find issues
 2. Feed those PBIs to a Cursor background agent
 3. Review the results in your preview environment
