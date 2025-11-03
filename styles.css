@@ -125,3 +125,12 @@
     font-family: var(--font-playfair), serif;
   }
 }
+
+.progressive-image {
+  filter: blur(20px);
+  transition: filter 0.5s ease-out;
+}
+
+.progressive-image.loaded {
+  filter: none;
+}
