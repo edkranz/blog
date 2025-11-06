@@ -54,7 +54,10 @@ export async function GET() {
     const post = edge?.node;
     if (!post) return;
 
-    const postUrl = `${siteUrl}/posts/${post._sys.breadcrumbs.join('/')}`;
+    const breadcrumbs = post._sys.breadcrumbs.join('/');
+    if (breadcrumbs === 'about') return;
+
+    const postUrl = `${siteUrl}/posts/${breadcrumbs}`;
     
     feed.addItem({
       title: post.title || 'Untitled',

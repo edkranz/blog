@@ -32,7 +32,14 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Eddie Kranz"
+  title: "Eddie Kranz",
+  alternates: {
+    types: {
+      'application/rss+xml': [
+        { url: '/feed.xml', title: 'Eddie Kranz Blog RSS Feed' },
+      ],
+    },
+  },
 };
 
 export default function RootLayout({
