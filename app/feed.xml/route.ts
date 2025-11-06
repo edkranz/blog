@@ -4,7 +4,7 @@ import client from '@/tina/__generated__/client';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eddiekranz.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kranz.au';
   
   const feed = new Feed({
     title: 'Eddie Kranz Blog',
