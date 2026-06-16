@@ -51,6 +51,9 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
   // Keep the address bar in sync with the focused window (+ ?view=full when fullscreen).
   useEffect(() => {
     if (!booted) return;
+    // Don't touch a giscus OAuth callback URL (…?giscus=<token>): the giscus client
+    // needs to read that param to finish sign-in, and it strips the param itself once done.
+    if (window.location.search.includes('giscus=')) return;
     const win = windows.find((w) => w.id === focusedId);
     const slug = win?.appId === 'blog' ? (win.props?.slug as string | undefined) : undefined;
     let path = pathForWindow(win?.appId ?? null, slug);
