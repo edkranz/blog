@@ -9,7 +9,7 @@ const ICONS: Record<string, LucideIcon> = { github: Github, linkedin: Linkedin, 
 
 export function ContactApp() {
   const [message, setMessage] = useState('');
-  const mailto = `mailto:${profile.email}?subject=${encodeURIComponent('Hello from Eddie OS')}&body=${encodeURIComponent(message)}`;
+  const mailto = `mailto:${profile.email}?subject=${encodeURIComponent('Hello from kranz.au')}&body=${encodeURIComponent(message)}`;
 
   return (
     <AppScroll className='bg-card'>

@@ -31,14 +31,14 @@ const SITE_URL = 'https://kranz.au';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Eddie Kranz — Eddie OS',
-    template: '%s · Eddie OS',
+    default: 'Eddie Kranz',
+    template: '%s · Eddie Kranz',
   },
   description:
-    'Eddie OS — the personal desktop of Eddie Kranz, Software Engineer at SSW. Boot up to explore an about page, blog, projects and a few games, all inside a draggable window manager.',
-  applicationName: 'Eddie OS',
+    'The personal site of Eddie Kranz, Software Engineer at SSW — a browser desktop you can click around: an about page, blog, projects and a few games, all inside a draggable window manager.',
+  applicationName: 'Eddie Kranz',
   authors: [{ name: 'Eddie Kranz', url: SITE_URL }],
-  keywords: ['Eddie Kranz', 'Eddie OS', 'software engineer', 'SSW', 'blog', 'portfolio', 'Next.js'],
+  keywords: ['Eddie Kranz', 'kranz.au', 'software engineer', 'SSW', 'blog', 'portfolio', 'Next.js'],
   alternates: {
     canonical: '/',
     types: {
@@ -48,18 +48,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: SITE_URL,
-    title: 'Eddie Kranz — Eddie OS',
-    description: 'Boot up Eddie OS — a desktop environment for one engineer. About, blog, projects & games.',
-    siteName: 'Eddie OS',
+    title: 'Eddie Kranz',
+    description: 'The personal site of Eddie Kranz — a browser desktop with an about page, blog, projects & games.',
+    siteName: 'Eddie Kranz',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Eddie Kranz — Eddie OS',
-    description: 'Boot up Eddie OS — a desktop environment for one engineer.',
+    title: 'Eddie Kranz',
+    description: 'The personal site of Eddie Kranz — a browser desktop with an about page, blog, projects & games.',
   },
   icons: {
-    icon: '/icons/face.png',
-    apple: '/icons/face.png',
+    icon: [
+      { url: '/icons/favicon.png', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/icons/favicon.png',
   },
 };
 

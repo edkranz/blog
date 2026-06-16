@@ -4,7 +4,7 @@ export const APP_META: Record<AppId, AppMeta> = {
   welcome: {
     id: 'welcome',
     name: 'Welcome',
-    iconId: 'face',
+    iconId: 'monogram',
     accent: 'var(--brand-red)',
     defaultSize: { w: 480, h: 568 },
     minSize: { w: 340, h: 420 },
@@ -15,7 +15,7 @@ export const APP_META: Record<AppId, AppMeta> = {
   about: {
     id: 'about',
     name: 'About Me',
-    iconId: 'user',
+    iconId: 'face',
     accent: 'var(--brand-blue)',
     defaultSize: { w: 720, h: 600 },
     minSize: { w: 360, h: 360 },

@@ -228,7 +228,7 @@ function DvdBounce() {
       ctx.font = 'bold 14px ui-sans-serif, system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('eddie OS', x + bw / 2, y + bh / 2 + 1);
+      ctx.fillText('eddie', x + bw / 2, y + bh / 2 + 1);
     });
     return stop;
   }, []);

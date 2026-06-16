@@ -116,7 +116,7 @@ export function SettingsApp() {
           <div className='flex items-center gap-3'>
             <span className='grid h-10 w-10 place-items-center rounded-xl bg-primary text-lg'>🖥️</span>
             <div>
-              <div className='text-sm font-bold'>Eddie OS v1.0</div>
+              <div className='text-sm font-bold'>Eddie Kranz v1.0</div>
               <div className='text-xs text-muted-foreground'>Built with Next.js, React, Tailwind &amp; Framer Motion</div>
             </div>
           </div>

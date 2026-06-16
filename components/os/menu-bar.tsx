@@ -74,7 +74,7 @@ function EddieMenu() {
       </button>
       {open ? (
         <div className='absolute left-0 top-[26px] w-56 rounded-xl border p-1.5 os-panel shadow-xl'>
-          <Item onClick={act(() => openApp('welcome'))}>About Eddie OS</Item>
+          <Item onClick={act(() => openApp('welcome'))}>About This Site</Item>
           <Item onClick={act(() => openApp('settings'))}>System Settings…</Item>
           <div className='my-1 h-px bg-border' />
           <Item onClick={act(() => openApp('terminal'))}>Open Terminal</Item>

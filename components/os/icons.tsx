@@ -29,6 +29,15 @@ export const UserIcon = (p: SVG) => (
   </svg>
 );
 
+export const MonogramIcon = (p: SVG) => (
+  <svg {...base(p)}>
+    <rect x='3' y='3' width='18' height='18' rx='4' />
+    <text x='12' y='15.5' textAnchor='middle' fontSize='8' fontWeight='700' fill='currentColor' stroke='none' fontFamily='monospace'>
+      EK
+    </text>
+  </svg>
+);
+
 export const BookIcon = (p: SVG) => (
   <svg {...base(p)}>
     <path d='M5 4.5h8a2 2 0 0 1 2 2V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5Z' />
@@ -96,6 +105,7 @@ export const ICONS: Record<IconId, (p: SVG) => React.JSX.Element> = {
   tetris: TetrisIcon,
   face: FaceIcon,
   user: UserIcon,
+  monogram: MonogramIcon,
   book: BookIcon,
   grid: GridIcon,
   terminal: TerminalIcon,

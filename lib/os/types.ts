@@ -10,7 +10,7 @@ export type AppId =
   | 'settings'
   | 'trash';
 
-export type IconId = 'face' | 'user' | 'book' | 'grid' | 'terminal' | 'mine' | 'tetris' | 'mail' | 'gear' | 'trash';
+export type IconId = 'face' | 'user' | 'monogram' | 'book' | 'grid' | 'terminal' | 'mine' | 'tetris' | 'mail' | 'gear' | 'trash';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 

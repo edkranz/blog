@@ -22,11 +22,11 @@ const out = (t: string, c = 'text-zinc-300'): Line => [{ t, c }];
 const NEOFETCH: Line[] = [
   [{ t: '       ___          ', c: 'text-[var(--brand-red)]' }, { t: 'eddie', c: 'text-emerald-400' }, { t: '@', c: 'text-zinc-500' }, { t: 'kranz.au', c: 'text-sky-400' }],
   [{ t: '      (• ◡ •)         ', c: 'text-[var(--brand-red)]' }, { t: '----------------', c: 'text-zinc-600' }],
-  [{ t: '      /|   |\\         ', c: 'text-[var(--brand-red)]' }, { t: 'OS', c: 'text-amber-300' }, { t: ': Eddie OS v1.0', c: 'text-zinc-300' }],
+  [{ t: '      /|   |\\         ', c: 'text-[var(--brand-red)]' }, { t: 'OS', c: 'text-amber-300' }, { t: ': Eddie Kranz v1.0', c: 'text-zinc-300' }],
   [{ t: '       \\___/          ', c: 'text-[var(--brand-red)]' }, { t: 'Host', c: 'text-amber-300' }, { t: ': kranz.au', c: 'text-zinc-300' }],
   [{ t: '   ╔══════════════╗   ', c: 'text-fuchsia-400' }, { t: 'Kernel', c: 'text-amber-300' }, { t: ': React 19 + Next 16', c: 'text-zinc-300' }],
   [{ t: '   ║  E D D I E    ║   ', c: 'text-fuchsia-400' }, { t: 'Shell', c: 'text-amber-300' }, { t: ': eksh 1.0', c: 'text-zinc-300' }],
-  [{ t: '   ║      O S      ║   ', c: 'text-fuchsia-400' }, { t: 'WM', c: 'text-amber-300' }, { t: ': zustand-wm', c: 'text-zinc-300' }],
+  [{ t: '   ║  K R A N Z    ║   ', c: 'text-fuchsia-400' }, { t: 'WM', c: 'text-amber-300' }, { t: ': zustand-wm', c: 'text-zinc-300' }],
   [{ t: '   ╚══════════════╝   ', c: 'text-fuchsia-400' }, { t: 'CPU', c: 'text-amber-300' }, { t: ': Caffeine ×8', c: 'text-zinc-300' }],
   [{ t: '                      ', c: 'text-fuchsia-400' }, { t: 'Memory', c: 'text-amber-300' }, { t: ': 42 half-baked ideas', c: 'text-zinc-300' }],
 ];
@@ -44,7 +44,7 @@ export function TerminalApp({ win }: AppContentProps) {
   const closeWindow = useWindowStore((s) => s.closeWindow);
   const { setTheme } = useTheme();
   const [lines, setLines] = useState<Line[]>(() => [
-    [{ t: 'Eddie OS', c: 'text-[var(--brand-red)] font-bold' }, { t: ' — eksh 1.0', c: 'text-zinc-400' }],
+    [{ t: 'Eddie Kranz', c: 'text-[var(--brand-red)] font-bold' }, { t: ' — eksh 1.0', c: 'text-zinc-400' }],
     out("Type 'help' to get started, or 'neofetch' to show off.", 'text-zinc-500'),
     [],
   ]);

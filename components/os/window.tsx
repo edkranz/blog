@@ -22,33 +22,20 @@ const CURSORS: Record<ResizeDir, string> = {
   se: 'nwse-resize',
 };
 
-function TrafficLights({ onClose, onMinimize, onMaximize }: { onClose: () => void; onMinimize: () => void; onMaximize: () => void }) {
+/** Squared-off, brand-coloured window controls — platform-agnostic (not macOS traffic lights). */
+function WindowControls({ onClose, onMinimize, onMaximize }: { onClose: () => void; onMinimize: () => void; onMaximize: () => void }) {
   const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  const chip = 'grid h-4 w-4 place-items-center rounded-[3px] ring-1 ring-black/25 transition hover:brightness-110 active:brightness-95';
   return (
-    <div className='group/lights flex items-center gap-2' onPointerDown={stop} onDoubleClick={stop}>
-      <button
-        type='button'
-        aria-label='Close window'
-        onClick={onClose}
-        className='grid h-3.5 w-3.5 place-items-center rounded-full bg-[#ff5f57] text-[8px] font-bold text-black/55 ring-1 ring-black/10 transition hover:brightness-105'
-      >
-        <span className='opacity-0 transition group-hover/lights:opacity-100'>×</span>
+    <div className='flex items-center gap-1.5' onPointerDown={stop} onDoubleClick={stop}>
+      <button type='button' aria-label='Close window' onClick={onClose} className={cn(chip, 'bg-[var(--brand-red)] text-white/90')}>
+        <span className='text-[12px] font-bold leading-none'>×</span>
       </button>
-      <button
-        type='button'
-        aria-label='Minimize window'
-        onClick={onMinimize}
-        className='grid h-3.5 w-3.5 place-items-center rounded-full bg-[#febc2e] text-[9px] font-bold text-black/55 ring-1 ring-black/10 transition hover:brightness-105'
-      >
-        <span className='-mt-px opacity-0 transition group-hover/lights:opacity-100'>−</span>
+      <button type='button' aria-label='Minimize window' onClick={onMinimize} className={cn(chip, 'bg-[var(--brand-yellow)] text-black/55')}>
+        <span className='block h-[2px] w-2 rounded-full bg-current' />
       </button>
-      <button
-        type='button'
-        aria-label='Maximize window'
-        onClick={onMaximize}
-        className='grid h-3.5 w-3.5 place-items-center rounded-full bg-[#28c840] text-[8px] font-bold text-black/55 ring-1 ring-black/10 transition hover:brightness-105'
-      >
-        <span className='opacity-0 transition group-hover/lights:opacity-100'>+</span>
+      <button type='button' aria-label='Maximize window' onClick={onMaximize} className={cn(chip, 'bg-[var(--brand-blue)] text-white/90')}>
+        <span className='block h-2 w-2 rounded-[1px] border-[1.5px] border-current' />
       </button>
     </div>
   );
@@ -186,7 +173,7 @@ export function Window({
           )}
           style={{ touchAction: 'none' }}
         >
-          <TrafficLights
+          <WindowControls
             onClose={() => closeWindow(win.id)}
             onMinimize={() => minimizeWindow(win.id)}
             onMaximize={() => toggleMaximize(win.id)}

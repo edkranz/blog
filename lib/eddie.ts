@@ -106,9 +106,9 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    id: 'eddie-os',
-    title: 'Eddie OS',
-    subtitle: 'This website',
+    id: 'this-website',
+    title: 'This Website',
+    subtitle: 'A desktop in your browser',
     description:
       'A personal site reimagined as a desktop environment: a draggable window manager, dock, terminal and games — built from scratch.',
     tech: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'Framer Motion', 'Zustand'],

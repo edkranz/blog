@@ -16,7 +16,7 @@ export function WelcomeApp() {
       <div className='relative h-24 overflow-hidden wp-sunrise grain'>
         <div className='dot-grid absolute inset-0 opacity-40' />
         <span className='absolute right-3 top-2 select-none text-[11px] font-bold uppercase tracking-[0.2em] text-black/30'>
-          Eddie OS
+          Eddie Kranz
         </span>
       </div>
 

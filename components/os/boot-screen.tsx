@@ -25,18 +25,11 @@ export function BootScreen({ onDone }: { onDone: () => void }) {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        initial={reduce ? false : { scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className='os-float'
+        animate={reduce ? undefined : { rotate: 360 }}
+        transition={reduce ? undefined : { repeat: Infinity, duration: 1.2, ease: 'linear' }}
       >
         <AppIcon iconId='face' accent='var(--brand-red)' size={76} rounded={22} />
       </motion.div>
-
-      <h1 className='mt-6 text-3xl font-bold tracking-tight text-white'>
-        Eddie<span className='text-[var(--brand-yellow)]'> OS</span>
-      </h1>
-      <p className='mt-1 text-sm text-white/55'>Welcome back, Eddie</p>
 
       <div className='mt-7 h-1.5 w-52 overflow-hidden rounded-full bg-white/15'>
         <motion.div
@@ -46,7 +39,6 @@ export function BootScreen({ onDone }: { onDone: () => void }) {
           transition={{ duration, ease: 'easeInOut' }}
         />
       </div>
-      <p className='mt-8 text-[11px] uppercase tracking-[0.2em] text-white/35'>Click anywhere to skip</p>
     </motion.button>
   );
 }
