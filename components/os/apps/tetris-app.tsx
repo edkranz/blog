@@ -16,8 +16,9 @@ type Cell = string | null;
 type Board = Cell[][];
 type Piece = { type: PieceType; m: Matrix; x: number; y: number };
 type Status = 'playing' | 'paused' | 'over';
-type Game = { board: Board; piece: Piece; next: PieceType; score: number; lines: number; level: number; status: Status };
-type Action = 'left' | 'right' | 'rotate' | 'soft' | 'hard' | 'tick' | 'togglePause' | 'reset';
+type Mode = 'normal' | 'angel' | 'evil';
+type Game = { board: Board; piece: Piece; next: PieceType; score: number; lines: number; level: number; status: Status; mode: Mode };
+type Action = 'left' | 'right' | 'rotate' | 'soft' | 'hard' | 'tick' | 'togglePause' | 'reset' | 'modeNormal' | 'modeAngel' | 'modeEvil';
 
 const SHAPES: Record<PieceType, Matrix> = {
   I: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
@@ -70,6 +71,74 @@ function clearLines(board: Board): { board: Board; cleared: number } {
   return { board: [...fresh, ...kept], cleared };
 }
 
+// ---- Evil / Angel piece selection ------------------------------------------
+// Rate a board for the player (higher = better): reward cleared lines, punish
+// total height, holes and bumpiness (El-Tetris-style weights).
+function evalBoard(board: Board, lines: number): number {
+  const h = new Array<number>(COLS).fill(0);
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c]) {
+        h[c] = ROWS - r;
+        break;
+      }
+    }
+  }
+  let agg = 0;
+  for (const v of h) agg += v;
+  let holes = 0;
+  for (let c = 0; c < COLS; c++) {
+    let seen = false;
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c]) seen = true;
+      else if (seen) holes++;
+    }
+  }
+  let bump = 0;
+  for (let c = 0; c < COLS - 1; c++) bump += Math.abs(h[c] - h[c + 1]);
+  return -0.51 * agg + 0.76 * lines - 0.36 * holes - 0.18 * bump;
+}
+
+// Hard-drop a rotated piece at column x, lock it and clear lines. null if it
+// can't come to rest (out of bounds, or it overflows the top of the board).
+function dropResult(board: Board, m: Matrix, x: number): { board: Board; lines: number } | null {
+  let y = -m.length;
+  while (!collides(board, m, x, y + 1)) y++;
+  const cells = cellsOf(m, x, y);
+  for (const [r, c] of cells) if (c < 0 || c >= COLS || r < 0) return null;
+  const nb = board.map((row) => row.slice());
+  for (const [r, c] of cells) nb[r][c] = 'x';
+  const { board: out, cleared } = clearLines(nb);
+  return { board: out, lines: cleared };
+}
+
+// Best board score the player could reach with a given piece (all rotations & columns).
+function bestAchievable(board: Board, type: PieceType): number {
+  let best = Number.NEGATIVE_INFINITY;
+  let m = SHAPES[type];
+  for (let rot = 0; rot < 4; rot++) {
+    for (let x = -2; x <= COLS; x++) {
+      const res = dropResult(board, m, x);
+      if (res) {
+        const s = evalBoard(res.board, res.lines);
+        if (s > best) best = s;
+      }
+    }
+    m = rotate(m);
+  }
+  return best;
+}
+
+// Normal → random. Evil → the piece whose best outcome is worst for the player.
+// Angel → the piece whose best outcome is best. Ties broken randomly for variety.
+function choosePiece(board: Board, mode: Mode): PieceType {
+  if (mode === 'normal') return randType();
+  const scored = TYPES.map((t) => ({ t, s: bestAchievable(board, t) }));
+  const target = mode === 'evil' ? Math.min(...scored.map((p) => p.s)) : Math.max(...scored.map((p) => p.s));
+  const tied = scored.filter((p) => Math.abs(p.s - target) < 1e-6).map((p) => p.t);
+  return tied[Math.floor(Math.random() * tied.length)] ?? randType();
+}
+
 function lock(g: Game): Game {
   const board = g.board.map((r) => r.slice());
   for (const [r, c] of cellsOf(g.piece.m, g.piece.x, g.piece.y)) if (r >= 0) board[r][c] = COLORS[g.piece.type];
@@ -80,20 +149,25 @@ function lock(g: Game): Game {
   return {
     board: cleared,
     piece,
-    next: randType(),
+    next: choosePiece(cleared, g.mode),
     score: g.score + LINE_SCORE[n] * g.level,
     lines,
     level: Math.floor(lines / 10) + 1,
     status: over ? 'over' : 'playing',
+    mode: g.mode,
   };
 }
 
-function init(): Game {
-  return { board: emptyBoard(), piece: spawn(randType()), next: randType(), score: 0, lines: 0, level: 1, status: 'playing' };
+function init(mode: Mode = 'normal'): Game {
+  const board = emptyBoard();
+  return { board, piece: spawn(choosePiece(board, mode)), next: choosePiece(board, mode), score: 0, lines: 0, level: 1, status: 'playing', mode };
 }
 
 function step(g: Game, a: Action): Game {
-  if (a === 'reset') return init();
+  if (a === 'reset') return init(g.mode);
+  if (a === 'modeNormal') return init('normal');
+  if (a === 'modeAngel') return init('angel');
+  if (a === 'modeEvil') return init('evil');
   if (a === 'togglePause') {
     if (g.status === 'playing') return { ...g, status: 'paused' };
     if (g.status === 'paused') return { ...g, status: 'playing' };
@@ -250,6 +324,11 @@ export function TetrisApp({ win }: AppContentProps) {
 
       {/* Side panel + controls */}
       <div className='flex min-w-0 flex-1 flex-col'>
+        <div className='mb-2.5 grid grid-cols-3 gap-1'>
+          <ModeButton active={g.mode === 'normal'} onPick={() => dispatch('modeNormal')} emoji='🎲' label='Normal' activeTone='border-foreground/30 bg-secondary text-foreground' />
+          <ModeButton active={g.mode === 'angel'} onPick={() => dispatch('modeAngel')} emoji='😇' label='Angel' activeTone='border-[var(--brand-blue)] bg-secondary text-[var(--brand-blue)]' />
+          <ModeButton active={g.mode === 'evil'} onPick={() => dispatch('modeEvil')} emoji='😈' label='Evil' activeTone='border-[var(--brand-red)] bg-secondary text-[var(--brand-red)]' />
+        </div>
         <div className='grid grid-cols-3 gap-1.5 text-center'>
           <Stat label='Score' value={g.score} />
           <Stat label='Lines' value={g.lines} />
@@ -291,6 +370,24 @@ export function TetrisApp({ win }: AppContentProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ModeButton({ active, onPick, emoji, label, activeTone }: { active: boolean; onPick: () => void; emoji: string; label: string; activeTone: string }) {
+  return (
+    <button
+      type='button'
+      aria-pressed={active}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onPick}
+      className={cn(
+        'flex flex-col items-center gap-0.5 rounded-lg border px-1 py-1.5 text-[10px] font-bold uppercase tracking-wide transition',
+        active ? activeTone : 'border-transparent text-foreground/50 hover:bg-secondary/50',
+      )}
+    >
+      <span className='text-sm leading-none'>{emoji}</span>
+      {label}
+    </button>
   );
 }
 

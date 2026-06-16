@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { ArrowLeft, CalendarDays, Clock, Rss } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MarkdownContent } from '../blog-content';
+import { GiscusComments } from '../giscus';
 import { useOSData } from '../os-context';
 import { AppScroll, Chip } from '../ui';
 import type { AppContentProps } from './types';
@@ -112,6 +113,10 @@ function PostReader({ post, onBack }: { post: Post; onBack: () => void }) {
           <div className={cn('prose prose-eddie mt-5 max-w-none', 'prose-headings:font-bold prose-headings:tracking-tight')}>
             <MarkdownContent body={post.body} />
           </div>
+          <section className='mt-10 border-t pt-6'>
+            <h2 className='mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground'>Comments</h2>
+            <GiscusComments term={post.slug} />
+          </section>
         </article>
       </AppScroll>
     </div>
