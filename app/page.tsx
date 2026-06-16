@@ -1,18 +1,7 @@
-import React from "react";
-import client from "@/tina/__generated__/client";
-import Layout from "@/components/layout/layout";
-import ClientPage from "./[...urlSegments]/client-page";
+import { EddieOS } from '@/components/os/eddie-os';
+import { getPublishedPosts } from '@/lib/posts';
 
-export const revalidate = 300;
-
-export default async function Home() {
-  const data = await client.queries.page({
-    relativePath: `home.mdx`,
-  });
-
-  return (
-    <Layout rawPageData={data} hideChrome>
-      <ClientPage {...data} />
-    </Layout>
-  );
+export default function Page() {
+  const posts = getPublishedPosts();
+  return <EddieOS posts={posts} />;
 }
