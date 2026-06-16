@@ -5,10 +5,8 @@ import { type Wallpaper, usePrefs, wallpaperClass } from '@/lib/os/prefs';
 import { parseRoute, pathForWindow } from '@/lib/os/routes';
 import { useWindowStore } from '@/lib/os/store';
 import { cn } from '@/lib/utils';
-import { AnimatePresence } from 'motion/react';
 import { useTheme } from 'next-themes';
-import { useCallback, useEffect, useState } from 'react';
-import { BootScreen } from './boot-screen';
+import { useEffect, useState } from 'react';
 import { DesktopIcons } from './desktop-icons';
 import { Dock } from './dock';
 import { MenuBar } from './menu-bar';
@@ -24,33 +22,28 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const focusedId = useWindowStore((s) => s.focusedId);
   const fullscreenId = useWindowStore((s) => s.fullscreenId);
   const windows = useWindowStore((s) => s.windows);
-  const [booted, setBooted] = useState(false);
+  const [ready, setReady] = useState(false);
 
+  // Once hydrated: open the initial window (Welcome, or a deep-link), then fade the loader.
   useEffect(() => {
-    if (sessionStorage.getItem('eddie-os-booted') === '1') setBooted(true);
-  }, []);
-
-  const finishBoot = useCallback(() => {
-    sessionStorage.setItem('eddie-os-booted', '1');
-    setBooted(true);
-  }, []);
-
-  // Greet with Welcome — or honour a deep-link path (/blog/slug, /about, …, optionally ?view=full).
-  useEffect(() => {
-    if (!booted || useWindowStore.getState().windows.length > 0) return;
-    const { appId, slug, fullscreen } = parseRoute(initialPath, window.location.search);
-    if (appId === 'blog') openApp('blog', slug ? { props: { slug }, title: 'Blog' } : undefined);
-    else if (appId) openApp(appId);
-    else openApp('welcome');
-    if (fullscreen) {
-      const st = useWindowStore.getState();
-      if (st.focusedId) st.enterFullscreen(st.focusedId);
+    if (!mounted) return;
+    if (useWindowStore.getState().windows.length === 0) {
+      const { appId, slug, fullscreen } = parseRoute(initialPath, window.location.search);
+      if (appId === 'blog') openApp('blog', slug ? { props: { slug }, title: 'Blog' } : undefined);
+      else if (appId) openApp(appId);
+      else openApp('welcome');
+      if (fullscreen) {
+        const st = useWindowStore.getState();
+        if (st.focusedId) st.enterFullscreen(st.focusedId);
+      }
     }
-  }, [booted, openApp, initialPath]);
+    const id = setTimeout(() => setReady(true), 700);
+    return () => clearTimeout(id);
+  }, [mounted, openApp, initialPath]);
 
   // Keep the address bar in sync with the focused window (+ ?view=full when fullscreen).
   useEffect(() => {
-    if (!booted) return;
+    if (!mounted) return;
     // Don't touch a giscus OAuth callback URL (…?giscus=<token>): the giscus client
     // needs to read that param to finish sign-in, and it strips the param itself once done.
     if (window.location.search.includes('giscus=')) return;
@@ -61,7 +54,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
     if (window.location.pathname + window.location.search !== path) {
       window.history.replaceState(null, '', path);
     }
-  }, [focusedId, windows, booted, fullscreenId]);
+  }, [focusedId, windows, mounted, fullscreenId]);
 
   // Esc exits fullscreen.
   useEffect(() => {
@@ -84,7 +77,14 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
       <MenuBar />
       <Dock />
 
-      <AnimatePresence>{mounted && !booted ? <BootScreen onDone={finishBoot} /> : null}</AnimatePresence>
+      {/* Real loading spinner — server-rendered + pure CSS, so it paints on first paint
+          (before the JS bundle hydrates) and fades once the OS has mounted and opened. */}
+      <div className={cn('boot-loader', ready && 'boot-loader--done')} aria-hidden>
+        <img src='/icons/face.png' alt='' width={76} height={76} className='boot-loader__icon' />
+        <div className='boot-loader__bar'>
+          <span className='boot-loader__fill' />
+        </div>
+      </div>
     </main>
   );
 }
