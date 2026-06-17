@@ -24,14 +24,15 @@ function isKnownRoute(segments: string[]): boolean {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { segments } = await params;
+  const canonical = `/${segments.join('/')}`;
   const [first, second] = segments;
   if (first === 'blog' && second) {
     const post = getPostBySlug(second);
-    if (post) return { title: post.title, description: post.excerpt };
+    if (post) return { title: post.title, description: post.excerpt, alternates: { canonical } };
   }
   const meta = APP_META[first as AppId];
-  if (meta) return { title: meta.name };
-  return {};
+  if (meta) return { title: meta.name, alternates: { canonical } };
+  return { alternates: { canonical } };
 }
 
 export default async function CatchAll({ params }: Params) {
