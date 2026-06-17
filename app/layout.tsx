@@ -85,6 +85,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en' suppressHydrationWarning className={cn(openRunde.variable, jetbrains.variable)}>
       <body className='eddie-os font-sans antialiased'>
+        {/* Speed up first paint: the boot spinner icon (FCP element) and the wallpaper (LCP). */}
+        <link rel='preload' as='image' href='/icons/face.png' fetchPriority='high' />
+        <link rel='preload' as='image' href='/wallpapers/retro-sunrise.jpg' media='(prefers-color-scheme: light)' />
+        <link rel='preload' as='image' href='/wallpapers/retro-night.jpg' media='(prefers-color-scheme: dark)' />
         {/* When JS is disabled (or for crawlers that don't run it), hide the OS overlay
             and let the server-rendered content show and scroll. */}
         <noscript>

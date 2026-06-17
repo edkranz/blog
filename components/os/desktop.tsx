@@ -37,7 +37,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
         if (st.focusedId) st.enterFullscreen(st.focusedId);
       }
     }
-    const id = setTimeout(() => setReady(true), 700);
+    const id = setTimeout(() => setReady(true), 250);
     return () => clearTimeout(id);
   }, [mounted, openApp, initialPath]);
 
