@@ -413,6 +413,30 @@
   50% { transform: translate(-50%, -58%) rotate(14deg) scale(1.12); }
 }
 .zep-treat { animation: zep-treat 0.85s ease-in-out infinite; }
+/* Sleeping: gentle breathing with the occasional shuffle, so he reads as alive & clickable. */
+@keyframes zep-sleep {
+  0% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  7% { transform: scaleY(0.97) translateX(0) rotate(0deg); }
+  14% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  21% { transform: scaleY(0.97) translateX(0) rotate(0deg); }
+  27% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  31% { transform: scaleY(1) translateX(-3px) rotate(-2deg); }
+  35% { transform: scaleY(0.98) translateX(-3px) rotate(-2deg); }
+  40% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  48% { transform: scaleY(0.97) translateX(0) rotate(0deg); }
+  55% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  62% { transform: scaleY(0.97) translateX(0) rotate(0deg); }
+  68% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  72% { transform: scaleY(1) translateX(4px) rotate(2deg); }
+  76% { transform: scaleY(0.98) translateX(4px) rotate(2deg); }
+  82% { transform: scaleY(1) translateX(0) rotate(0deg); }
+  90% { transform: scaleY(0.97) translateX(0) rotate(0deg); }
+  100% { transform: scaleY(1) translateX(0) rotate(0deg); }
+}
+.zep-sleep {
+  animation: zep-sleep 13s ease-in-out infinite;
+  transform-origin: bottom center;
+}
 
 /* Tetris line-clear flash */
 @keyframes tetris-flash {
