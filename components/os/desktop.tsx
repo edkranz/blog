@@ -69,7 +69,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const wp: Wallpaper = mounted ? (resolvedTheme === 'dark' ? wallpaperDark : wallpaperLight) : 'cream';
 
   return (
-    <main className='fixed inset-0 overflow-hidden'>
+    <div className='os-root fixed inset-0 overflow-hidden'>
       <div className={cn('grain absolute inset-0', wallpaperClass(wp))} />
 
       {mounted && !isMobile ? <DesktopIcons /> : null}
@@ -85,6 +85,6 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
           <span className='boot-loader__fill' />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -83,6 +83,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en' suppressHydrationWarning className={cn(openRunde.variable, jetbrains.variable)}>
       <body className='eddie-os font-sans antialiased'>
+        {/* When JS is disabled (or for crawlers that don't run it), hide the OS overlay
+            and let the server-rendered content show and scroll. */}
+        <noscript>
+          <style>{'.os-root{display:none!important}body.eddie-os{overflow:auto!important;touch-action:auto!important}'}</style>
+        </noscript>
         <Script src='https://www.googletagmanager.com/gtag/js?id=G-080ZT75Q6V' strategy='afterInteractive' />
         <Script id='google-analytics' strategy='afterInteractive'>
           {`

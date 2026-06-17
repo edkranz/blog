@@ -1,4 +1,5 @@
 import { EddieOS } from '@/components/os/eddie-os';
+import { StaticSite } from '@/components/seo/static-site';
 import { APP_META } from '@/lib/os/apps-meta';
 import type { AppId } from '@/lib/os/types';
 import { getPostBySlug, getPublishedPosts } from '@/lib/posts';
@@ -36,5 +37,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function CatchAll({ params }: Params) {
   const { segments } = await params;
   if (!isKnownRoute(segments)) notFound();
-  return <EddieOS posts={getPublishedPosts()} initialPath={segments} />;
+  const posts = getPublishedPosts();
+  return (
+    <>
+      {/* Crawlable, server-rendered content (shown to no-JS / crawlers; the OS overlays it) */}
+      <StaticSite segments={segments} posts={posts} />
+      <EddieOS posts={posts} initialPath={segments} />
+    </>
+  );
 }
