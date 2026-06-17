@@ -28,7 +28,8 @@ const S = {
 };
 const SIZE = 104;
 const FOLLOW_SPEED = 290; // px / second toward the treat
-const NEAR = 96; // distance at which he stops to shake
+const RUN_START = 165; // cursor must be this far (from his centre) before he starts chasing
+const RUN_STOP = 92; // …and he stops to shake once it's this close (hysteresis kills the jitter)
 const PANEL_W = 268;
 const PANEL_H = 214;
 const WOOFS = ['woof', 'woof woof', 'woof woof woof!', 'awoooo~', 'woof! 🐾', 'woof woof'];
@@ -112,23 +113,27 @@ export function Zeppelin() {
     window.addEventListener('pointermove', onMove);
     let raf = 0;
     let prev = 0;
+    let running = false;
     const step = (t: number) => {
       const dt = prev ? Math.min(0.05, (t - prev) / 1000) : 0;
       prev = t;
-      const tx = cursorRef.current.x - SIZE / 2;
-      const ty = cursorRef.current.y - SIZE * 0.62;
+      const cx = cursorRef.current.x;
+      const cy = cursorRef.current.y;
       const { x, y } = posRef.current;
-      const dx = tx - x;
-      const dy = ty - y;
-      const dist = Math.hypot(dx, dy);
-      if (dist > NEAR) {
+      const dist = Math.hypot(cx - (x + SIZE / 2), cy - (y + SIZE / 2));
+      // Hysteresis: start chasing only past RUN_START, stop only within RUN_STOP — no jitter in between.
+      if (running ? dist <= RUN_STOP : dist >= RUN_START) running = !running;
+      if (running) {
+        const tx = cx - SIZE / 2;
+        const ty = cy - SIZE * 0.62;
+        const d = Math.hypot(tx - x, ty - y) || 1;
         const v = FOLLOW_SPEED * dt;
-        setPos({ x: x + (dx / dist) * v, y: y + (dy / dist) * v });
-        aimSprite(cursorRef.current.x - (x + SIZE / 2), cursorRef.current.y - (y + SIZE / 2));
+        setPos({ x: x + ((tx - x) / d) * v, y: y + ((ty - y) / d) * v });
+        aimSprite(cx - (x + SIZE / 2), cy - (y + SIZE / 2));
         setMoveDur(0);
         setMode('following');
       } else {
-        setFacing(cursorRef.current.x < x + SIZE / 2 ? -1 : 1);
+        setFacing(cx < x + SIZE / 2 ? -1 : 1);
         setMode('shake');
       }
       raf = requestAnimationFrame(step);
@@ -189,13 +194,12 @@ export function Zeppelin() {
 
   const giveTreat = () => {
     setTreat(false);
+    setMoveDur(0);
     setBubble('woof woof! 🦴❤️');
     setMode('excited');
-    setTimeout(() => setMode('loved'), 550);
-    setTimeout(() => {
-      setBubble(null);
-      sleep();
-    }, 2300);
+    window.setTimeout(() => setMode('loved'), 600);
+    window.setTimeout(() => setBubble(null), 3200);
+    window.setTimeout(() => setMode('sleeping'), 3400); // contentedly dozes off where he is
   };
 
   const startTreat = () => {
@@ -275,9 +279,9 @@ export function Zeppelin() {
                     type='button'
                     onClick={sleep}
                     title='Let him sleep'
-                    className='inline-flex items-center gap-1 rounded-lg border border-foreground/25 bg-secondary px-2.5 py-1.5 text-[12px] font-bold text-foreground transition hover:brightness-95'
+                    className='grid h-7 w-7 place-items-center rounded-lg border border-foreground/25 bg-foreground/10 text-[15px] transition hover:bg-foreground/20'
                   >
-                    💤 Sleep
+                    💤
                   </button>
                 </div>
               </div>
