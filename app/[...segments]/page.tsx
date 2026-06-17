@@ -30,6 +30,10 @@ const ROUTE_DESC: Record<string, string> = {
   contact: 'Get in touch with Eddie Kranz.',
 };
 
+// Interactive apps/games have no unique crawlable content (their static layer is the
+// home overview), so keep them out of the index to avoid thin/duplicate pages.
+const NOINDEX_APPS = new Set(['terminal', 'minesweeper', 'tetris', 'settings', 'trash']);
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { segments } = await params;
   const canonical = `/${segments.join('/')}`;
@@ -60,6 +64,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       title: meta.name,
       ...(description ? { description } : {}),
       alternates: { canonical },
+      ...(NOINDEX_APPS.has(first) ? { robots: { index: false, follow: true } } : {}),
       openGraph: { title: meta.name, ...(description ? { description } : {}), url: canonical, images: ['/og.png'] },
       twitter: { title: meta.name, ...(description ? { description } : {}), images: ['/og.png'] },
     };
