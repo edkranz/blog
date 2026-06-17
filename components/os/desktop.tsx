@@ -5,13 +5,17 @@ import { type Wallpaper, usePrefs, wallpaperClass } from '@/lib/os/prefs';
 import { parseRoute, pathForWindow } from '@/lib/os/routes';
 import { useWindowStore } from '@/lib/os/store';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { DesktopIcons } from './desktop-icons';
 import { Dock } from './dock';
 import { MenuBar } from './menu-bar';
 import { WindowManager } from './window-manager';
-import { Zeppelin } from './zeppelin';
+
+// Code-split, and only mounted once the browser is idle — so neither Zeppelin's
+// component code nor his sprite images compete with the initial page load.
+const Zeppelin = dynamic(() => import('./zeppelin').then((m) => m.Zeppelin), { ssr: false });
 
 export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const mounted = useMounted();
@@ -24,6 +28,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const fullscreenId = useWindowStore((s) => s.fullscreenId);
   const windows = useWindowStore((s) => s.windows);
   const [ready, setReady] = useState(false);
+  const [companionReady, setCompanionReady] = useState(false);
 
   // Once hydrated: open the initial window (Welcome, or a deep-link), then fade the loader.
   useEffect(() => {
@@ -41,6 +46,17 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
     const id = setTimeout(() => setReady(true), 250);
     return () => clearTimeout(id);
   }, [mounted, openApp, initialPath]);
+
+  // Bring Zeppelin in only when the browser is idle, so he never blocks first load.
+  useEffect(() => {
+    if (!mounted || isMobile) return;
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(() => setCompanionReady(true), { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(() => setCompanionReady(true), 1800);
+    return () => clearTimeout(id);
+  }, [mounted, isMobile]);
 
   // Keep the address bar in sync with the focused window (+ ?view=full when fullscreen).
   useEffect(() => {
@@ -77,7 +93,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
       <WindowManager />
       <MenuBar />
       <Dock />
-      {mounted && !isMobile ? <Zeppelin /> : null}
+      {companionReady && !isMobile ? <Zeppelin /> : null}
 
       {/* Real loading spinner — server-rendered + pure CSS, so it paints on first paint
           (before the JS bundle hydrates) and fades once the OS has mounted and opened. */}

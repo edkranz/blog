@@ -414,6 +414,13 @@
 }
 .zep-treat { animation: zep-treat 0.85s ease-in-out infinite; }
 
+/* Tetris line-clear flash */
+@keyframes tetris-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.1; }
+}
+.tetris-flash { animation: tetris-flash 0.14s steps(1, end) 2; }
+
 /* ───────────────────────── Prose (blog reader) ───────────────────────── */
 .prose-eddie {
   --tw-prose-body: var(--foreground);

@@ -4,8 +4,8 @@ import { MENUBAR_H } from '@/lib/os/constants';
 import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-type Mode = 'enter' | 'idle' | 'running' | 'chat' | 'sleeping' | 'following' | 'shake' | 'excited';
-type Dir = 'side' | 'front' | 'back';
+type Mode = 'enter' | 'idle' | 'running' | 'chat' | 'sleeping' | 'following' | 'shake' | 'excited' | 'loved';
+type Dir = 'side' | 'front' | 'back' | 'se' | 'ne';
 type Msg = { from: 'you' | 'zep'; text: string };
 
 const S = {
@@ -16,9 +16,14 @@ const S = {
   frontB: '/zeppelin/front-b.png',
   backA: '/zeppelin/back-a.png',
   backB: '/zeppelin/back-b.png',
+  seA: '/zeppelin/se-a.png',
+  seB: '/zeppelin/se-b.png',
+  neA: '/zeppelin/ne-a.png',
+  neB: '/zeppelin/ne-b.png',
   happy: '/zeppelin/happy.png',
   shake: '/zeppelin/shake.png',
   excited: '/zeppelin/excited.png',
+  loved: '/zeppelin/loved.png',
   sleep: '/zeppelin/sleep.png',
 };
 const SIZE = 104;
@@ -67,13 +72,33 @@ export function Zeppelin() {
     };
   }, []);
 
+  // Pick one of 8 directions (E/SE/S/SW/W/NW/N/NE). Right-facing sets flip for their left twins.
   const aimSprite = (dx: number, dy: number) => {
-    if (Math.abs(dx) > Math.abs(dy)) {
-      setDir('side');
-      setFacing(dx < 0 ? -1 : 1);
+    const deg = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360; // 0=E, 90=S(down), 270=N(up)
+    let set: Dir = 'side';
+    let fl = 1;
+    if (deg >= 337.5 || deg < 22.5) {
+      set = 'side'; // E
+    } else if (deg < 67.5) {
+      set = 'se'; // SE
+    } else if (deg < 112.5) {
+      set = 'front'; // S
+    } else if (deg < 157.5) {
+      set = 'se';
+      fl = -1; // SW
+    } else if (deg < 202.5) {
+      set = 'side';
+      fl = -1; // W
+    } else if (deg < 247.5) {
+      set = 'ne';
+      fl = -1; // NW
+    } else if (deg < 292.5) {
+      set = 'back'; // N
     } else {
-      setDir(dy > 0 ? 'front' : 'back');
+      set = 'ne'; // NE
     }
+    setDir(set);
+    setFacing(fl);
   };
 
   // Idle behaviour: scamper somewhere, or have a little thought. (Off while a treat is out.)
@@ -167,22 +192,31 @@ export function Zeppelin() {
   const sprite = (() => {
     if (mode === 'sleeping') return S.sleep;
     if (mode === 'shake') return S.shake;
+    if (mode === 'loved') return S.loved;
     if (mode === 'excited') return S.excited;
     if (mode === 'chat' || mode === 'enter') return S.happy;
     if (mode === 'running' || mode === 'following') {
-      const set = dir === 'front' ? [S.frontA, S.frontB] : dir === 'back' ? [S.backA, S.backB] : [S.runA, S.runB];
+      const sets: Record<Dir, [string, string]> = {
+        side: [S.runA, S.runB],
+        front: [S.frontA, S.frontB],
+        back: [S.backA, S.backB],
+        se: [S.seA, S.seB],
+        ne: [S.neA, S.neB],
+      };
+      const set = sets[dir];
       return frame ? set[1] : set[0];
     }
     return S.sit;
   })();
-  const flip = (mode === 'running' || mode === 'following') && dir === 'side' ? facing : 1;
+  const flip = mode === 'running' || mode === 'following' ? facing : 1;
 
   const giveTreat = () => {
     setTreat(false);
-    setMode('excited');
     setBubble('woof woof! 🦴❤️');
-    setTimeout(() => setBubble(null), 1800);
-    setTimeout(() => setMode('idle'), 1600);
+    setMode('excited');
+    setTimeout(() => setMode('loved'), 550);
+    setTimeout(() => setBubble(null), 2300);
+    setTimeout(() => setMode('idle'), 2300);
   };
 
   const startTreat = () => {
@@ -317,6 +351,7 @@ export function Zeppelin() {
             width={SIZE}
             height={SIZE}
             draggable={false}
+            fetchPriority='low'
             style={{ transform: `scaleX(${flip})`, imageRendering: 'pixelated' }}
             className='h-full w-full object-contain drop-shadow-[0_5px_3px_rgba(0,0,0,0.28)]'
           />

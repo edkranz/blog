@@ -17,8 +17,8 @@ type Board = Cell[][];
 type Piece = { type: PieceType; m: Matrix; x: number; y: number };
 type Status = 'playing' | 'paused' | 'over';
 type Mode = 'normal' | 'angel' | 'evil';
-type Game = { board: Board; piece: Piece; next: PieceType; score: number; lines: number; level: number; status: Status; mode: Mode };
-type Action = 'left' | 'right' | 'rotate' | 'soft' | 'hard' | 'tick' | 'togglePause' | 'reset' | 'modeNormal' | 'modeAngel' | 'modeEvil';
+type Game = { board: Board; piece: Piece; next: PieceType; score: number; lines: number; level: number; status: Status; mode: Mode; clearing: number[] };
+type Action = 'left' | 'right' | 'rotate' | 'soft' | 'hard' | 'tick' | 'togglePause' | 'reset' | 'modeNormal' | 'modeAngel' | 'modeEvil' | 'finishClear';
 
 const SHAPES: Record<PieceType, Matrix> = {
   I: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
@@ -70,6 +70,13 @@ function clearLines(board: Board): { board: Board; cleared: number } {
   const fresh = Array.from({ length: cleared }, () => Array<Cell>(COLS).fill(null));
   return { board: [...fresh, ...kept], cleared };
 }
+
+/** Indices of fully-filled rows — the ones about to clear (used for the flash). */
+const fullRows = (board: Board): number[] => {
+  const rows: number[] = [];
+  for (let r = 0; r < ROWS; r++) if (board[r].every((c) => c !== null)) rows.push(r);
+  return rows;
+};
 
 // ---- Evil / Angel piece selection ------------------------------------------
 // Rate a board for the player (higher = better): reward cleared lines, punish
@@ -142,25 +149,39 @@ function choosePiece(board: Board, mode: Mode): PieceType {
 function lock(g: Game): Game {
   const board = g.board.map((r) => r.slice());
   for (const [r, c] of cellsOf(g.piece.m, g.piece.x, g.piece.y)) if (r >= 0) board[r][c] = COLORS[g.piece.type];
-  const { board: cleared, cleared: n } = clearLines(board);
+  const rows = fullRows(board);
+  // If lines completed, freeze on them so they can flash; finishClear() then removes them.
+  if (rows.length > 0) return { ...g, board, clearing: rows };
+  const piece = spawn(g.next);
+  const over = collides(board, piece.m, piece.x, piece.y);
+  return { ...g, board, piece, next: choosePiece(board, g.mode), status: over ? 'over' : 'playing' };
+}
+
+function finishClear(g: Game): Game {
+  if (g.clearing.length === 0) return g;
+  const kept = g.board.filter((_, r) => !g.clearing.includes(r));
+  const n = g.clearing.length;
+  const fresh = Array.from({ length: n }, () => Array<Cell>(COLS).fill(null));
+  const board = [...fresh, ...kept];
   const lines = g.lines + n;
   const piece = spawn(g.next);
-  const over = collides(cleared, piece.m, piece.x, piece.y);
+  const over = collides(board, piece.m, piece.x, piece.y);
   return {
-    board: cleared,
+    ...g,
+    board,
     piece,
-    next: choosePiece(cleared, g.mode),
+    next: choosePiece(board, g.mode),
     score: g.score + LINE_SCORE[n] * g.level,
     lines,
     level: Math.floor(lines / 10) + 1,
     status: over ? 'over' : 'playing',
-    mode: g.mode,
+    clearing: [],
   };
 }
 
 function init(mode: Mode = 'normal'): Game {
   const board = emptyBoard();
-  return { board, piece: spawn(choosePiece(board, mode)), next: choosePiece(board, mode), score: 0, lines: 0, level: 1, status: 'playing', mode };
+  return { board, piece: spawn(choosePiece(board, mode)), next: choosePiece(board, mode), score: 0, lines: 0, level: 1, status: 'playing', mode, clearing: [] };
 }
 
 function step(g: Game, a: Action): Game {
@@ -168,12 +189,13 @@ function step(g: Game, a: Action): Game {
   if (a === 'modeNormal') return init('normal');
   if (a === 'modeAngel') return init('angel');
   if (a === 'modeEvil') return init('evil');
+  if (a === 'finishClear') return finishClear(g);
   if (a === 'togglePause') {
     if (g.status === 'playing') return { ...g, status: 'paused' };
     if (g.status === 'paused') return { ...g, status: 'playing' };
     return g;
   }
-  if (g.status !== 'playing') return g;
+  if (g.status !== 'playing' || g.clearing.length > 0) return g;
   const { board, piece } = g;
   const { m, x, y } = piece;
   switch (a) {
@@ -200,15 +222,16 @@ function step(g: Game, a: Action): Game {
   }
 }
 
-function Block({ color, size = CELL, ghost = false }: { color: string | null; size?: number; ghost?: boolean }) {
+function Block({ color, size = CELL, ghost = false, flash = false }: { color: string | null; size?: number; ghost?: boolean; flash?: boolean }) {
   return (
     <div
+      className={flash ? 'tetris-flash' : undefined}
       style={{
         width: size,
         height: size,
         borderRadius: 3,
-        background: ghost ? 'transparent' : (color ?? 'rgba(255,255,255,0.035)'),
-        boxShadow: color && !ghost ? 'inset 0 0 0 1px rgba(255,255,255,0.25), inset 1px 1px 2px rgba(255,255,255,0.4)' : undefined,
+        background: flash ? '#ffffff' : ghost ? 'transparent' : (color ?? 'rgba(255,255,255,0.035)'),
+        boxShadow: color && !ghost && !flash ? 'inset 0 0 0 1px rgba(255,255,255,0.25), inset 1px 1px 2px rgba(255,255,255,0.4)' : undefined,
         border: ghost && color ? `2px solid ${color}66` : undefined,
       }}
     />
@@ -235,11 +258,18 @@ export function TetrisApp({ win }: AppContentProps) {
 
   // Gravity — only runs while focused & playing, so it pauses when you switch windows.
   useEffect(() => {
-    if (g.status !== 'playing' || !focused) return;
+    if (g.status !== 'playing' || !focused || g.clearing.length > 0) return;
     const speed = Math.max(90, 800 - (g.level - 1) * 65);
     const id = setInterval(() => dispatch('tick'), speed);
     return () => clearInterval(id);
-  }, [g.status, g.level, focused]);
+  }, [g.status, g.level, focused, g.clearing.length]);
+
+  // Flash completed lines briefly, then remove them.
+  useEffect(() => {
+    if (g.clearing.length === 0) return;
+    const id = setTimeout(() => dispatch('finishClear'), 280);
+    return () => clearTimeout(id);
+  }, [g.clearing]);
 
   // Keyboard — active only while this window is focused.
   useEffect(() => {
@@ -270,13 +300,15 @@ export function TetrisApp({ win }: AppContentProps) {
   // Build the display grid: locked board + ghost + active piece.
   const view: Cell[][] = g.board.map((r) => r.slice());
   const ghostCells: [number, number][] = [];
-  if (g.status !== 'over') {
+  const settling = g.clearing.length > 0;
+  if (g.status !== 'over' && !settling) {
     let gy = g.piece.y;
     while (!collides(g.board, g.piece.m, g.piece.x, gy + 1)) gy++;
     for (const [r, c] of cellsOf(g.piece.m, g.piece.x, gy)) if (r >= 0 && !view[r][c]) ghostCells.push([r, c]);
   }
   const ghostSet = new Set(ghostCells.map(([r, c]) => r * COLS + c));
-  for (const [r, c] of cellsOf(g.piece.m, g.piece.x, g.piece.y)) if (r >= 0) view[r][c] = COLORS[g.piece.type];
+  if (!settling) for (const [r, c] of cellsOf(g.piece.m, g.piece.x, g.piece.y)) if (r >= 0) view[r][c] = COLORS[g.piece.type];
+  const clearingSet = new Set(g.clearing);
 
   const overlay =
     g.status === 'over'
@@ -297,7 +329,7 @@ export function TetrisApp({ win }: AppContentProps) {
               const isGhost = !color && ghostSet.has(r * COLS + c);
               return (
                 <div key={`${r}-${c}`} className='p-px'>
-                  <Block color={isGhost ? COLORS[g.piece.type] : color} ghost={isGhost} />
+                  <Block color={isGhost ? COLORS[g.piece.type] : color} ghost={isGhost} flash={clearingSet.has(r)} />
                 </div>
               );
             }),
