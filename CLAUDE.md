@@ -70,6 +70,32 @@ pnpm start        # Production server (next start)
 - `/feed.xml` — static RSS route (`app/feed.xml/route.ts`), reads the same posts loader.
 - `app/layout.tsx` — fonts (Open Runde local + JetBrains Mono), `ThemeProvider` (next-themes), analytics.
 
+### SEO: dual static + dynamic rendering
+
+Every route serves **two layers at the same URL**: a server-rendered, crawlable static page _and_ the dynamic OS.
+
+- **Static/SEO layer** (`components/seo/`): both pages (`app/page.tsx`, `app/[...segments]/page.tsx`) render
+  `<StaticSite>` (semantic HTML per route: home, about, blog list, full blog post via `<StaticMarkdown>`,
+  projects, contact — with real `<a href>` links) and `<RouteJsonLd>` (schema.org `Person` / `BlogPosting` /
+  `BreadcrumbList`) **before** `<EddieOS>`. So `curl <url>` and crawlers get readable content.
+- **Overlay gating**: the OS root is `<div class="os-root">` (`desktop.tsx`), `position: fixed` and opaque, so
+  it covers the static layer for browser users. A `<noscript>` rule in `layout.tsx` sets `.os-root{display:none}`
+  + restores body scroll, so no-JS/crawlers see the static page. The static content is **never `display:none`**,
+  so Googlebot (which runs JS) still indexes it under the overlay.
+- **Metadata**: `generateMetadata` in `app/[...segments]/page.tsx` sets per-route self-referential `canonical`,
+  `openGraph`, and `twitter` (each must re-declare `images: ['/og.png']` — Next does not merge OG images when a
+  route overrides `openGraph`). Default share image: `public/og.png` (1200×630).
+- **Payload**: the client OS receives post _metadata only_ (`toMeta` in `lib/posts.ts`) — post bodies are **not**
+  shipped in any page's hydration payload. The Blog reader lazy-loads a body from the static route handler
+  `app/api/post/[slug]/route.ts` (one prerendered JSON per slug) when a post is opened. The static SEO layer
+  still server-renders full bodies on `/blog/<slug>` for crawlers.
+
+**Adding content — do I update both layers?** Mostly no:
+- **Blog posts** (`content/posts/*.mdx`) and **profile/projects data** (`lib/eddie.ts`) are read by _both_ the OS
+  apps and the static layer → edit once, both update. No extra work.
+- **A brand-new top-level route/section** is the only exception: add a `case` to `components/seo/static-site.tsx`
+  (and `json-ld.tsx` if you want structured data) so it gets static content instead of falling back to the home overview.
+
 ### Styling (`styles.css`)
 
 Tailwind CSS v4. PostHog-inspired palette (cream `#EEEFE9`, red `#F54E00`, blue `#1D4AFF`, yellow

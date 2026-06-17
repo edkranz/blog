@@ -51,11 +51,13 @@ export const metadata: Metadata = {
     title: 'Eddie Kranz',
     description: 'The personal site of Eddie Kranz — a browser desktop with an about page, blog, projects & games.',
     siteName: 'Eddie Kranz',
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Eddie Kranz — Software Engineer' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Eddie Kranz',
     description: 'The personal site of Eddie Kranz — a browser desktop with an about page, blog, projects & games.',
+    images: ['/og.png'],
   },
   icons: {
     icon: [

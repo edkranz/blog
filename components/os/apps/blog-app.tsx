@@ -1,7 +1,7 @@
 'use client';
 
 import { useWindowStore } from '@/lib/os/store';
-import type { Post } from '@/lib/posts';
+import type { PostMeta as PostData } from '@/lib/posts';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ArrowLeft, CalendarDays, Clock, Rss } from 'lucide-react';
@@ -12,7 +12,7 @@ import { useOSData } from '../os-context';
 import { AppScroll, Chip } from '../ui';
 import type { AppContentProps } from './types';
 
-function PostMeta({ post }: { post: Post }) {
+function PostMeta({ post }: { post: PostData }) {
   return (
     <div className='flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground'>
       <span className='inline-flex items-center gap-1.5'>
@@ -25,7 +25,7 @@ function PostMeta({ post }: { post: Post }) {
   );
 }
 
-function PostList({ posts, onOpen }: { posts: Post[]; onOpen: (slug: string) => void }) {
+function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string) => void }) {
   return (
     <div className='flex h-full flex-col bg-card'>
       <div className='flex items-center justify-between border-b px-5 py-3.5'>
@@ -82,7 +82,7 @@ function PostList({ posts, onOpen }: { posts: Post[]; onOpen: (slug: string) => 
   );
 }
 
-function PostReader({ post, onBack }: { post: Post; onBack: () => void }) {
+function PostReader({ post, body, onBack }: { post: PostData; body: string | undefined; onBack: () => void }) {
   return (
     <div className='flex h-full flex-col bg-card'>
       <div className='flex shrink-0 items-center gap-2 border-b px-3 py-2'>
@@ -111,7 +111,11 @@ function PostReader({ post, onBack }: { post: Post; onBack: () => void }) {
             <PostMeta post={post} />
           </div>
           <div className={cn('prose prose-eddie mt-5 max-w-none', 'prose-headings:font-bold prose-headings:tracking-tight')}>
-            <MarkdownContent body={post.body} />
+            {body === undefined ? (
+              <p className='py-8 text-center text-sm text-muted-foreground'>Loading…</p>
+            ) : (
+              <MarkdownContent body={body} />
+            )}
           </div>
           <section className='mt-10 border-t pt-6'>
             <h2 className='mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground'>Comments</h2>
@@ -128,6 +132,7 @@ export function BlogApp({ win }: AppContentProps) {
   const updateProps = useWindowStore((s) => s.updateProps);
   const initial = typeof win.props?.slug === 'string' ? (win.props.slug as string) : null;
   const [activeSlug, setActiveSlug] = useState<string | null>(initial);
+  const [bodies, setBodies] = useState<Record<string, string>>({});
 
   // React to deep-links opened from other apps (projects / terminal / URL).
   useEffect(() => {
@@ -140,8 +145,25 @@ export function BlogApp({ win }: AppContentProps) {
     updateProps(win.id, { slug: activeSlug ?? undefined });
   }, [activeSlug, win.id, updateProps]);
 
+  // Lazy-load the post body on open (bodies are no longer shipped in the page payload).
+  useEffect(() => {
+    if (!activeSlug || bodies[activeSlug] !== undefined) return;
+    let cancelled = false;
+    fetch(`/api/post/${activeSlug}`)
+      .then((r) => (r.ok ? r.json() : { body: '' }))
+      .then((d: { body?: string }) => {
+        if (!cancelled) setBodies((prev) => ({ ...prev, [activeSlug]: d.body ?? '' }));
+      })
+      .catch(() => {
+        if (!cancelled) setBodies((prev) => ({ ...prev, [activeSlug]: '' }));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSlug, bodies]);
+
   const active = activeSlug ? posts.find((p) => p.slug === activeSlug) : undefined;
 
-  if (active) return <PostReader post={active} onBack={() => setActiveSlug(null)} />;
+  if (active) return <PostReader post={active} body={bodies[active.slug]} onBack={() => setActiveSlug(null)} />;
   return <PostList posts={posts} onOpen={setActiveSlug} />;
 }

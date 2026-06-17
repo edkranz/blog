@@ -66,3 +66,20 @@ export function getPublishedPosts(): Post[] {
 export function getPostBySlug(slug: string): Post | undefined {
   return getAllPosts().find((p) => p.slug === slug);
 }
+
+/** Post metadata without the (potentially large) markdown body. */
+export type PostMeta = Omit<Post, 'body'>;
+
+/** Drop the body so post lists can be sent to the client OS without shipping every body. */
+export function toMeta(p: Post): PostMeta {
+  return {
+    slug: p.slug,
+    title: p.title,
+    date: p.date,
+    excerpt: p.excerpt,
+    tags: p.tags,
+    heroImg: p.heroImg,
+    hideFromBlogList: p.hideFromBlogList,
+    readingMinutes: p.readingMinutes,
+  };
+}
