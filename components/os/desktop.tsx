@@ -11,6 +11,7 @@ import { DesktopIcons } from './desktop-icons';
 import { Dock } from './dock';
 import { MenuBar } from './menu-bar';
 import { WindowManager } from './window-manager';
+import { Zeppelin } from './zeppelin';
 
 export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const mounted = useMounted();
@@ -76,6 +77,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
       <WindowManager />
       <MenuBar />
       <Dock />
+      {mounted && !isMobile ? <Zeppelin /> : null}
 
       {/* Real loading spinner — server-rendered + pure CSS, so it paints on first paint
           (before the JS bundle hydrates) and fades once the OS has mounted and opened. */}

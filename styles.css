@@ -396,6 +396,19 @@
   100% { left: 100%; }
 }
 
+/* Zeppelin the desktop companion */
+@keyframes zep-pop {
+  0% { transform: scale(0) translateY(24px); }
+  60% { transform: scale(1.18) translateY(-6px); }
+  100% { transform: scale(1) translateY(0); }
+}
+.zep-pop { animation: zep-pop 620ms cubic-bezier(0.2, 1.35, 0.4, 1); }
+@keyframes zep-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.zep-bob { animation: zep-bob 2.6s ease-in-out infinite; }
+
 /* ───────────────────────── Prose (blog reader) ───────────────────────── */
 .prose-eddie {
   --tw-prose-body: var(--foreground);
