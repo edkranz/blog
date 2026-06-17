@@ -408,6 +408,11 @@
   50% { transform: translateY(-3px); }
 }
 .zep-bob { animation: zep-bob 2.6s ease-in-out infinite; }
+@keyframes zep-treat {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-14deg) scale(1); }
+  50% { transform: translate(-50%, -58%) rotate(14deg) scale(1.12); }
+}
+.zep-treat { animation: zep-treat 0.85s ease-in-out infinite; }
 
 /* ───────────────────────── Prose (blog reader) ───────────────────────── */
 .prose-eddie {

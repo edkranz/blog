@@ -4,37 +4,53 @@ import { MENUBAR_H } from '@/lib/os/constants';
 import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-type Mode = 'enter' | 'idle' | 'running' | 'chat' | 'sleeping';
+type Mode = 'enter' | 'idle' | 'running' | 'chat' | 'sleeping' | 'following' | 'shake' | 'excited';
+type Dir = 'side' | 'front' | 'back';
 type Msg = { from: 'you' | 'zep'; text: string };
 
-const SPRITES = {
+const S = {
   sit: '/zeppelin/sit.png',
   runA: '/zeppelin/run-a.png',
   runB: '/zeppelin/run-b.png',
+  frontA: '/zeppelin/front-a.png',
+  frontB: '/zeppelin/front-b.png',
+  backA: '/zeppelin/back-a.png',
+  backB: '/zeppelin/back-b.png',
   happy: '/zeppelin/happy.png',
+  shake: '/zeppelin/shake.png',
+  excited: '/zeppelin/excited.png',
   sleep: '/zeppelin/sleep.png',
 };
 const SIZE = 104;
-const SPEED = 200; // px / second
+const SPEED = 200; // wander px/s
+const FOLLOW_SPEED = 290; // px/s toward the treat
+const NEAR = 96; // distance at which he stops to shake
 const PANEL_W = 268;
+const PANEL_H = 214; // approx, for keeping the bubble clear of the top bar
 const WOOFS = ['woof', 'woof woof', 'woof woof woof!', 'awoooo~', 'woof! 🐾', 'woof woof'];
-const IDLE_THOUGHTS = ['woof?', '*sniff sniff*', 'pet me?', '🦴', '*wags tail*', 'woof woof'];
+const THOUGHTS = ['woof?', '*sniff sniff*', 'pet me?', '🦴', '*wags tail*', 'woof woof'];
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const pick = <T,>(xs: T[]): T => xs[Math.floor(Math.random() * xs.length)];
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
 export function Zeppelin() {
   const [mode, setMode] = useState<Mode>('enter');
   const [pos, setPos] = useState({ x: -400, y: -400 });
   const [facing, setFacing] = useState(1);
+  const [dir, setDir] = useState<Dir>('side');
   const [frame, setFrame] = useState(0);
   const [moveDur, setMoveDur] = useState(0);
   const [bubble, setBubble] = useState<string | null>(null);
   const [cycle, setCycle] = useState(0);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
+  const [treat, setTreat] = useState(false);
+  const [cursor, setCursor] = useState({ x: -400, y: -400 });
   const posRef = useRef(pos);
   posRef.current = pos;
+  const cursorRef = useRef(cursor);
+  cursorRef.current = cursor;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Entrance: trot in near the dock, greet, then start wandering.
@@ -51,12 +67,21 @@ export function Zeppelin() {
     };
   }, []);
 
-  // Decide the next idle action: scamper somewhere, or have a little thought.
+  const aimSprite = (dx: number, dy: number) => {
+    if (Math.abs(dx) > Math.abs(dy)) {
+      setDir('side');
+      setFacing(dx < 0 ? -1 : 1);
+    } else {
+      setDir(dy > 0 ? 'front' : 'back');
+    }
+  };
+
+  // Idle behaviour: scamper somewhere, or have a little thought. (Off while a treat is out.)
   const act = useCallback(() => {
     if (Math.random() < 0.4) {
-      setBubble(pick(IDLE_THOUGHTS));
+      setBubble(pick(THOUGHTS));
       setTimeout(() => setBubble(null), 2400);
-      setCycle((c) => c + 1); // re-arm the scheduler without leaving idle
+      setCycle((c) => c + 1);
       return;
     }
     const vw = window.innerWidth;
@@ -64,15 +89,15 @@ export function Zeppelin() {
     const tx = rand(24, vw - SIZE - 24);
     const ty = rand(MENUBAR_H + 28, vh - SIZE - 100);
     const { x, y } = posRef.current;
-    const dist = Math.hypot(tx - x, ty - y);
-    setFacing(tx < x ? -1 : 1);
-    setMoveDur(Math.max(450, (dist / SPEED) * 1000));
+    aimSprite(tx - x, ty - y);
+    setMoveDur(Math.max(450, (Math.hypot(tx - x, ty - y) / SPEED) * 1000));
     setPos({ x: tx, y: ty });
     setMode('running');
   }, []);
 
-  // Scheduler: idle → wait → act; running → arrive → idle.
+  // Wander scheduler (idle → act; running → idle). Suspended while following a treat.
   useEffect(() => {
+    if (treat) return;
     if (mode === 'idle') {
       const id = setTimeout(act, rand(2400, 5400));
       return () => clearTimeout(id);
@@ -81,44 +106,108 @@ export function Zeppelin() {
       const id = setTimeout(() => setMode('idle'), moveDur);
       return () => clearTimeout(id);
     }
-  }, [mode, cycle, moveDur, act]);
+  }, [mode, cycle, moveDur, act, treat]);
 
-  // Leg animation while running.
+  // Leg animation while moving.
   useEffect(() => {
-    if (mode !== 'running') return;
+    if (mode !== 'running' && mode !== 'following') return;
     const id = setInterval(() => setFrame((f) => (f ? 0 : 1)), 130);
     return () => clearInterval(id);
   }, [mode]);
 
-  // Keep the chat scrolled to the latest woof.
+  // Treat held → track the cursor and chase it; shake a paw when it's right in front of him.
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 999999 });
-  }, []);
+    if (!treat) return;
+    setBubble(null);
+    const onMove = (e: PointerEvent) => setCursor({ x: e.clientX, y: e.clientY });
+    window.addEventListener('pointermove', onMove);
+    let raf = 0;
+    let prev = 0;
+    const step = (t: number) => {
+      const dt = prev ? Math.min(0.05, (t - prev) / 1000) : 0;
+      prev = t;
+      const tx = cursorRef.current.x - SIZE / 2;
+      const ty = cursorRef.current.y - SIZE * 0.62;
+      const { x, y } = posRef.current;
+      const dx = tx - x;
+      const dy = ty - y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > NEAR) {
+        const v = FOLLOW_SPEED * dt;
+        setPos({ x: x + (dx / dist) * v, y: y + (dy / dist) * v });
+        aimSprite(cursorRef.current.x - (x + SIZE / 2), cursorRef.current.y - (y + SIZE / 2));
+        setMoveDur(0);
+        setMode('following');
+      } else {
+        setFacing(cursorRef.current.x < x + SIZE / 2 ? -1 : 1);
+        setMode('shake');
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, [treat]);
 
-  const sprite =
-    mode === 'running'
-      ? frame
-        ? SPRITES.runB
-        : SPRITES.runA
-      : mode === 'sleeping'
-        ? SPRITES.sleep
-        : mode === 'chat' || mode === 'enter'
-          ? SPRITES.happy
-          : SPRITES.sit;
+  // Esc puts the treat away.
+  useEffect(() => {
+    if (!treat) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setTreat(false);
+        setMode('idle');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [treat]);
+
+  const sprite = (() => {
+    if (mode === 'sleeping') return S.sleep;
+    if (mode === 'shake') return S.shake;
+    if (mode === 'excited') return S.excited;
+    if (mode === 'chat' || mode === 'enter') return S.happy;
+    if (mode === 'running' || mode === 'following') {
+      const set = dir === 'front' ? [S.frontA, S.frontB] : dir === 'back' ? [S.backA, S.backB] : [S.runA, S.runB];
+      return frame ? set[1] : set[0];
+    }
+    return S.sit;
+  })();
+  const flip = (mode === 'running' || mode === 'following') && dir === 'side' ? facing : 1;
+
+  const giveTreat = () => {
+    setTreat(false);
+    setMode('excited');
+    setBubble('woof woof! 🦴❤️');
+    setTimeout(() => setBubble(null), 1800);
+    setTimeout(() => setMode('idle'), 1600);
+  };
+
+  const startTreat = () => {
+    setMode('following');
+    setMoveDur(0);
+    setTreat(true);
+  };
 
   const onPet = () => {
+    if (treat) {
+      giveTreat();
+      return;
+    }
     if (mode === 'chat') return;
     if (mode === 'sleeping') {
       setMode('idle');
       return;
     }
-    // Open the chat — nudge into a spot where the bubble fits on screen.
     const vw = window.innerWidth;
-    const half = PANEL_W / 2 - SIZE / 2;
-    const x = Math.min(Math.max(posRef.current.x, half + 12), vw - half - SIZE - 12);
-    const y = Math.max(posRef.current.y, MENUBAR_H + 250);
+    const vh = window.innerHeight;
+    const x = clamp(posRef.current.x, PANEL_W / 2 - SIZE / 2 + 8, vw - PANEL_W / 2 - SIZE / 2 - 8);
+    const y = clamp(posRef.current.y, MENUBAR_H + PANEL_H, vh - SIZE - 16);
     setMoveDur(180);
     setPos({ x, y });
+    setDir('side');
     setFacing(1);
     if (msgs.length === 0) setMsgs([{ from: 'zep', text: pick(['Woof! 🐾', 'woof woof!']) }]);
     setMode('chat');
@@ -137,14 +226,23 @@ export function Zeppelin() {
   };
 
   const nap = () => {
-    const vh = window.innerHeight;
     setMoveDur(650);
-    setPos({ x: 28, y: vh - SIZE - 100 });
+    setPos({ x: 28, y: window.innerHeight - SIZE - 100 });
     setMode('sleeping');
   };
 
   return (
     <div className='pointer-events-none fixed inset-0 z-[8000] select-none'>
+      {/* the treat that follows the cursor */}
+      {treat ? (
+        <div
+          className='zep-treat pointer-events-none fixed text-2xl'
+          style={{ left: cursor.x, top: cursor.y, transform: 'translate(-50%, -50%)' }}
+        >
+          🦴
+        </div>
+      ) : null}
+
       <div
         className='absolute left-0 top-0'
         style={{ transform: `translate(${pos.x}px, ${pos.y}px)`, transition: moveDur ? `transform ${moveDur}ms linear` : 'none' }}
@@ -157,15 +255,18 @@ export function Zeppelin() {
           </div>
         ) : null}
 
-        {/* chat panel */}
+        {/* chat panel — always opens above, and onPet keeps him clear of the top bar */}
         {mode === 'chat' ? (
           <div className='pointer-events-auto absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2' style={{ width: PANEL_W }}>
             <div className='os-window-shadow relative overflow-hidden rounded-2xl border-2 border-foreground/15 bg-card'>
               <div className='flex items-center gap-2 border-b bg-secondary/60 px-3 py-2'>
-                <img src={SPRITES.happy} alt='' width={24} height={24} style={{ imageRendering: 'pixelated' }} className='drop-shadow' />
+                <img src={S.happy} alt='' width={24} height={24} style={{ imageRendering: 'pixelated' }} className='drop-shadow' />
                 <span className='text-[13px] font-bold'>Zeppelin</span>
                 <span className='text-[11px] text-muted-foreground'>· good boy</span>
                 <div className='ml-auto flex items-center gap-1'>
+                  <button type='button' onClick={startTreat} title='Hold out a treat' className='grid h-6 w-6 place-items-center rounded-md text-[13px] text-foreground/55 transition hover:bg-foreground/10'>
+                    🦴
+                  </button>
                   <button type='button' onClick={nap} title='Let him nap' className='grid h-6 w-6 place-items-center rounded-md text-[13px] text-foreground/55 transition hover:bg-foreground/10'>
                     💤
                   </button>
@@ -206,8 +307,8 @@ export function Zeppelin() {
         <button
           type='button'
           onClick={onPet}
-          aria-label='Zeppelin the dog — click to chat'
-          className={cn('pointer-events-auto block cursor-pointer border-0 bg-transparent p-0', mode === 'enter' && 'zep-pop', mode === 'idle' && 'zep-bob')}
+          aria-label='Zeppelin the dog'
+          className={cn('pointer-events-auto block cursor-pointer border-0 bg-transparent p-0', mode === 'enter' && 'zep-pop', (mode === 'idle' || mode === 'shake') && 'zep-bob')}
           style={{ width: SIZE, height: SIZE }}
         >
           <img
@@ -216,7 +317,7 @@ export function Zeppelin() {
             width={SIZE}
             height={SIZE}
             draggable={false}
-            style={{ transform: `scaleX(${facing})`, imageRendering: 'pixelated' }}
+            style={{ transform: `scaleX(${flip})`, imageRendering: 'pixelated' }}
             className='h-full w-full object-contain drop-shadow-[0_5px_3px_rgba(0,0,0,0.28)]'
           />
         </button>
