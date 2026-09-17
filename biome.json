@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": [],
+    "ignore": ["**/public/**"],
     "maxSize": 3145728
   },
   "formatter": {
