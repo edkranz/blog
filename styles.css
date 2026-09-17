@@ -492,3 +492,54 @@
 .prose-eddie :not(pre) > code::after {
   content: '';
 }
+
+/* ───────────────────────── Power: meltdown, kernel panic, shutdown ───────────────────────── */
+
+/* The terminal, mid `rm -rf /`: jitter, skew, colour tearing. */
+@keyframes os-meltdown {
+  0% { transform: translate(0, 0) skewX(0); filter: none; }
+  8% { transform: translate(-3px, 1px) skewX(-2deg); filter: hue-rotate(40deg); }
+  16% { transform: translate(4px, -2px) skewX(1deg); filter: none; }
+  24% { transform: translate(-2px, 2px) skewX(0); filter: invert(1) hue-rotate(180deg); }
+  28% { transform: translate(0, 0) skewX(0); filter: none; }
+  40% { transform: translate(6px, 0) skewX(-4deg); filter: saturate(3); }
+  48% { transform: translate(-5px, 3px) skewX(3deg); filter: none; }
+  60% { transform: translate(0, -4px) skewX(0); filter: invert(1); }
+  63% { transform: translate(0, 0); filter: none; }
+  80% { transform: translate(-8px, 2px) skewX(-6deg); filter: hue-rotate(-60deg) contrast(2); }
+  100% { transform: translate(0, 0) skewX(0); filter: none; }
+}
+.os-meltdown {
+  animation: os-meltdown 0.32s steps(2) infinite;
+}
+
+@keyframes os-panic-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.82; }
+  94% { opacity: 1; }
+  97% { opacity: 0.9; }
+}
+.os-panic__screen {
+  animation: os-panic-flicker 6s linear infinite;
+}
+.os-panic__scanlines {
+  background-image: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
+  background-size: 100% 3px;
+}
+/* Press-and-hold ring on the power button: --hold goes 0 → 1 while held. */
+.os-hold-ring {
+  background: conic-gradient(#fff calc(var(--hold, 0) * 360deg), rgba(255, 255, 255, 0.18) 0);
+}
+
+/* "It is now safe to turn off your computer." */
+.os-shutdown__text {
+  color: #f5a524;
+  text-shadow: 0 0 6px rgba(245, 165, 36, 0.55), 0 0 18px rgba(245, 165, 36, 0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .os-meltdown,
+  .os-panic__screen {
+    animation: none;
+  }
+}

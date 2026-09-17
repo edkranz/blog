@@ -1,6 +1,7 @@
 'use client';
 
 import { useIsMobile, useMounted } from '@/lib/os/hooks';
+import { usePower } from '@/lib/os/power';
 import { type Wallpaper, usePrefs, wallpaperClass } from '@/lib/os/prefs';
 import { parseRoute, pathForWindow } from '@/lib/os/routes';
 import { useWindowStore } from '@/lib/os/store';
@@ -16,6 +17,9 @@ import { WindowManager } from './window-manager';
 // Code-split, and only mounted once the browser is idle — so neither Zeppelin's
 // component code nor his sprite images compete with the initial page load.
 const Zeppelin = dynamic(() => import('./zeppelin').then((m) => m.Zeppelin), { ssr: false });
+// Power states are rare, so their screens only load when something goes (deliberately) wrong.
+const KernelPanic = dynamic(() => import('./kernel-panic').then((m) => m.KernelPanic), { ssr: false });
+const ShutdownScreen = dynamic(() => import('./shutdown-screen').then((m) => m.ShutdownScreen), { ssr: false });
 
 export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const mounted = useMounted();
@@ -27,6 +31,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
   const focusedId = useWindowStore((s) => s.focusedId);
   const fullscreenId = useWindowStore((s) => s.fullscreenId);
   const windows = useWindowStore((s) => s.windows);
+  const power = usePower((s) => s.state);
   const [ready, setReady] = useState(false);
   const [companionReady, setCompanionReady] = useState(false);
 
@@ -94,6 +99,10 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
       <MenuBar />
       <Dock />
       {companionReady && !isMobile ? <Zeppelin /> : null}
+
+      {/* rm -rf / → sticky kernel panic; shutdown → "safe to turn off". Both sit above the boot loader. */}
+      {mounted && power === 'panic' ? <KernelPanic /> : null}
+      {mounted && power === 'off' ? <ShutdownScreen /> : null}
 
       {/* Real loading spinner — server-rendered + pure CSS, so it paints on first paint
           (before the JS bundle hydrates) and fades once the OS has mounted and opened. */}
