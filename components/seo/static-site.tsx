@@ -35,7 +35,7 @@ function Shell({ children }: { children: ReactNode }) {
       <main className='mx-auto max-w-2xl px-6 py-6'>{children}</main>
       <footer className='mx-auto mt-8 max-w-2xl px-6 py-10 text-sm text-muted-foreground'>
         <p>
-          {profile.name} — {profile.role} at {profile.company.name}. {profile.location}.
+          {profile.name}, {profile.role} at {profile.company.name}. {profile.location}.
         </p>
         <p className='mt-2 flex flex-wrap gap-3'>
           {socials.map((s) => (
@@ -111,7 +111,7 @@ export function StaticSite({ segments, posts }: { segments?: string[]; posts: Po
         <ul className='mt-2 space-y-2'>
           {skills.map((s) => (
             <li key={s.title}>
-              <strong>{s.title}</strong> — {s.body}
+              <strong>{s.title}</strong>: {s.body}
             </li>
           ))}
         </ul>
@@ -170,12 +170,12 @@ export function StaticSite({ segments, posts }: { segments?: string[]; posts: Po
       <Shell>
         <h1 className='text-2xl font-bold'>Contact</h1>
         <p className='mt-2'>
-          Get in touch with {profile.name} — <a href={`mailto:${profile.email}`}>{profile.email}</a>.
+          Get in touch with {profile.name}: <a href={`mailto:${profile.email}`}>{profile.email}</a>.
         </p>
         <ul className='mt-4 space-y-2'>
           {socials.map((s) => (
             <li key={s.id}>
-              <a href={s.url}>{s.label}</a> — {s.handle}
+              <a href={s.url}>{s.label}</a> ({s.handle})
             </li>
           ))}
         </ul>
@@ -204,7 +204,7 @@ export function StaticSite({ segments, posts }: { segments?: string[]; posts: Po
             {posts.slice(0, 5).map((p) => (
               <li key={p.slug}>
                 <a href={`/blog/${p.slug}`}>{p.title}</a>
-                {p.excerpt ? <span className='text-muted-foreground'> — {p.excerpt}</span> : null}
+                {p.excerpt ? <span className='text-muted-foreground'>: {p.excerpt}</span> : null}
               </li>
             ))}
           </ul>

@@ -8,7 +8,7 @@ export function GET() {
 
   const feed = new Feed({
     title: 'Eddie Kranz Blog',
-    description: 'Writing about software development, AI workflows and tinkering — from Eddie Kranz.',
+    description: 'Writing about software development, AI workflows and tinkering, by Eddie Kranz.',
     id: siteUrl,
     link: siteUrl,
     language: 'en',

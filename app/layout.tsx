@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: '%s · Eddie Kranz',
   },
   description:
-    'The personal site of Eddie Kranz, Software Engineer at SSW — a browser desktop you can click around: an about page, blog, projects and a few games, all inside a draggable window manager.',
+    'The personal site of Eddie Kranz, Software Engineer at SSW. A browser desktop you can click around: an about page, blog, projects and a few games, all inside a draggable window manager.',
   applicationName: 'Eddie Kranz',
   authors: [{ name: 'Eddie Kranz', url: SITE_URL }],
   keywords: ['Eddie Kranz', 'kranz.au', 'software engineer', 'SSW', 'blog', 'portfolio', 'Next.js'],
@@ -49,14 +49,14 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE_URL,
     title: 'Eddie Kranz',
-    description: 'The personal site of Eddie Kranz — a browser desktop with an about page, blog, projects & games.',
+    description: 'The personal site of Eddie Kranz: a browser desktop with an about page, blog, projects and games.',
     siteName: 'Eddie Kranz',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Eddie Kranz — Software Engineer' }],
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Eddie Kranz, Software Engineer' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Eddie Kranz',
-    description: 'The personal site of Eddie Kranz — a browser desktop with an about page, blog, projects & games.',
+    description: 'The personal site of Eddie Kranz: a browser desktop with an about page, blog, projects and games.',
     images: ['/og.png'],
   },
   icons: {

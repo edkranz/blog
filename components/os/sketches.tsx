@@ -91,7 +91,9 @@ function Particles() {
         if (dm < 170) {
           p.vx += (dx / dm) * 0.04;
           p.vy += (dy / dm) * 0.04;
-          ctx.strokeStyle = `${p.c}${Math.round((1 - dm / 170) * 120).toString(16).padStart(2, '0')}`;
+          ctx.strokeStyle = `${p.c}${Math.round((1 - dm / 170) * 120)
+            .toString(16)
+            .padStart(2, '0')}`;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(mouse.x, mouse.y);
@@ -181,7 +183,7 @@ function GameOfLife() {
           ctx.fillRect(x + 0.5, y + 0.5, CELL - 1.5, CELL - 1.5);
         }
       },
-      11,
+      11
     );
     return () => {
       canvas.removeEventListener('click', onClick);
@@ -242,8 +244,8 @@ export const SKETCHES: Record<string, () => React.JSX.Element> = {
 };
 
 const HINTS: Record<string, string> = {
-  particles: 'Live JS canvas — move your cursor through it',
-  life: "Conway's Game of Life — click to reseed",
+  particles: 'Particles',
+  life: "Conway's Game of Life",
   dvd: 'Will it ever hit the corner?',
 };
 
@@ -258,9 +260,7 @@ export function SketchFrame({ name, height, caption }: { name?: string; height?:
           canvas · {name}
         </span>
       </div>
-      <figcaption className={cn('mt-2 text-center text-[13px] text-muted-foreground')}>
-        {caption ?? (name && HINTS[name]) ?? 'Live JS canvas'}
-      </figcaption>
+      <figcaption className={cn('mt-2 text-center text-[13px] text-muted-foreground')}>{caption ?? (name && HINTS[name]) ?? 'Live JS canvas'}</figcaption>
     </figure>
   );
 }

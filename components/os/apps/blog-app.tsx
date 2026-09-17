@@ -48,7 +48,7 @@ function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string)
       </div>
       <AppScroll className='flex-1 px-4 py-4'>
         {posts.length === 0 ? (
-          <p className='px-1 py-8 text-center text-sm text-muted-foreground'>No posts yet — check back soon.</p>
+          <p className='px-1 py-8 text-center text-sm text-muted-foreground'>No posts yet.</p>
         ) : (
           <ul className='space-y-3'>
             {posts.map((post) => (
@@ -62,9 +62,7 @@ function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string)
                   <div className='mt-1.5'>
                     <PostMeta post={post} />
                   </div>
-                  {post.excerpt ? (
-                    <p className='mt-2 line-clamp-2 text-[13.5px] leading-relaxed text-muted-foreground'>{post.excerpt}</p>
-                  ) : null}
+                  {post.excerpt ? <p className='mt-2 line-clamp-2 text-[13.5px] leading-relaxed text-muted-foreground'>{post.excerpt}</p> : null}
                   {post.tags.length > 0 ? (
                     <div className='mt-3 flex flex-wrap gap-1.5'>
                       {post.tags.map((t) => (
@@ -111,11 +109,7 @@ function PostReader({ post, body, onBack }: { post: PostData; body: string | und
             <PostMeta post={post} />
           </div>
           <div className={cn('prose prose-eddie mt-5 max-w-none', 'prose-headings:font-bold prose-headings:tracking-tight')}>
-            {body === undefined ? (
-              <p className='py-8 text-center text-sm text-muted-foreground'>Loading…</p>
-            ) : (
-              <MarkdownContent body={body} />
-            )}
+            {body === undefined ? <p className='py-8 text-center text-sm text-muted-foreground'>Loading…</p> : <MarkdownContent body={body} />}
           </div>
           <section className='mt-10 border-t pt-6'>
             <h2 className='mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground'>Comments</h2>

@@ -13,7 +13,7 @@ export default function NotFound() {
         </div>
         <div className='px-7 py-9 text-center'>
           <div className='text-6xl'>🛸</div>
-          <h1 className='mt-4 text-2xl font-bold'>404 — File not found</h1>
+          <h1 className='mt-4 text-2xl font-bold'>404: File not found</h1>
           <p className='mt-2 text-[15px] leading-relaxed text-muted-foreground'>
             This window drifted off into deep space. The file you&apos;re looking for isn&apos;t on this machine.
           </p>
