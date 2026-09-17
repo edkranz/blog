@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+  DOOM, run by js-dos (DOSBox compiled to WebAssembly, GPL-2.0). The OS embeds this page in an
+  <iframe> so the emulator's globals stay isolated and closing the window tears everything down.
+  doom.jsdos = id Software's DOOM 1.9 shareware release + a dosbox.conf (see docs/doom.md).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>DOOM</title>
+    <link rel="stylesheet" href="js-dos/js-dos.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      #dos {
+        position: fixed;
+        inset: 0;
+      }
+      /* js-dos chrome we don't want inside a window: sidebar, loader branding, social links. */
+      .emulator-loading-info,
+      .emulator-loading-pre-1,
+      .emulator-loading-pre-2,
+      .emulator-loading-pre-3,
+      .flex-grow-0 {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dos"></div>
+    <script src="js-dos/js-dos.js"></script>
+    <script>
+      emulators.pathPrefix = 'js-dos/';
+      var player = Dos(document.getElementById('dos'), {
+        noSideBar: true,
+        noFullscreen: true,
+        noSocialLinks: true,
+      });
+      player.run('doom.jsdos');
+
+      // Keep the keyboard on the game: clicking the frame or focusing the window refocuses it.
+      function grab() {
+        var el = document.querySelector('#dos canvas');
+        if (el) {
+          el.setAttribute('tabindex', '0');
+          el.focus();
+        }
+      }
+      document.addEventListener('pointerdown', grab);
+      window.addEventListener('focus', grab);
+    </script>
+  </body>
+</html>
