@@ -20,7 +20,6 @@ export function ProjectsApp() {
     <div className='flex h-full flex-col bg-card'>
       <div className='border-b px-5 py-3.5'>
         <h1 className='text-lg font-bold leading-none'>Projects</h1>
-        <p className='mt-1 text-xs text-muted-foreground'>A few things I&apos;ve built, researched & tinkered with.</p>
       </div>
       <AppScroll className='flex-1 px-4 py-4'>
         <div className='grid gap-3.5 sm:grid-cols-2'>
