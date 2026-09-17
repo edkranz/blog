@@ -73,7 +73,9 @@ pnpm start        # Production server (next start)
 - `window.tsx` — draggable (title-bar) + resizable (edges/corners) window chrome with macOS traffic
   lights, focus-to-front, maximize/minimize. Pointer-event based; `motion` only for enter/exit.
 - `window-manager.tsx` — renders open windows from the store; on mobile shows one maximized window.
-- `menu-bar.tsx`, `dock.tsx`, `desktop-icons.tsx`, `boot-screen.tsx` — chrome pieces.
+- `menu-bar.tsx` — real menus (logo, focused app, File/Edit/View/Window) built on `menu.tsx` (`Dropdown` +
+  `MenuList`: click to open, hover to switch between siblings, never steals focus so Edit acts on the active
+  input). With nothing focused the app is **Files** (this OS's Finder). `dock.tsx`, `desktop-icons.tsx` — chrome.
 - `apps/` — one component per app + `registry.tsx` (maps `AppId` → content) and `meta` lives in
   `lib/os/apps-meta.ts` (pure data: title, icon, accent, default size, dock/desktop flags).
 

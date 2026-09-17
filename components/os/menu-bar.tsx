@@ -3,12 +3,13 @@
 import { getAppMeta } from '@/lib/os/apps-meta';
 import { MENUBAR_H } from '@/lib/os/constants';
 import { useMounted } from '@/lib/os/hooks';
+import { usePower } from '@/lib/os/power';
 import { useWindowStore } from '@/lib/os/store';
-import { cn } from '@/lib/utils';
 import { BatteryMedium, Moon, Sun, Volume2, Wifi } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppIcon } from './icons';
+import { Dropdown, type MenuEntry } from './menu';
 
 function Clock() {
   const mounted = useMounted();
@@ -25,68 +26,6 @@ function Clock() {
     <span className='tabular-nums'>
       {day}&nbsp;&nbsp;{time}
     </span>
-  );
-}
-
-function EddieMenu() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const openApp = useWindowStore((s) => s.openApp);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
-    window.addEventListener('pointerdown', onDown);
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('pointerdown', onDown);
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  const act = (fn: () => void) => () => {
-    fn();
-    setOpen(false);
-  };
-
-  const Item = ({ children, onClick }: { children: React.ReactNode; onClick: () => void }) => (
-    <button
-      type='button'
-      onClick={onClick}
-      className='w-full rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-foreground transition hover:bg-primary hover:text-primary-foreground'
-    >
-      {children}
-    </button>
-  );
-
-  return (
-    <div ref={ref} className='relative'>
-      <button
-        type='button'
-        onClick={() => setOpen((o) => !o)}
-        className={cn('grid h-[18px] w-[18px] place-items-center rounded-md transition', open && 'bg-foreground/10')}
-        aria-label='Eddie menu'
-      >
-        <AppIcon iconId='face' size={18} rounded={5} />
-      </button>
-      {open ? (
-        <div className='absolute left-0 top-[26px] w-56 rounded-xl border p-1.5 os-panel shadow-xl'>
-          <Item onClick={act(() => openApp('welcome'))}>About This Site</Item>
-          <Item onClick={act(() => openApp('settings'))}>System Settings…</Item>
-          <div className='my-1 h-px bg-border' />
-          <Item onClick={act(() => openApp('terminal'))}>Open Terminal</Item>
-          <Item onClick={act(() => openApp('about'))}>About Me</Item>
-          <div className='my-1 h-px bg-border' />
-          <Item onClick={act(() => window.open('https://github.com/edkranz/blog', '_blank', 'noopener'))}>
-            View source ↗
-          </Item>
-          <Item onClick={act(() => window.location.reload())}>Restart…</Item>
-        </div>
-      ) : null}
-    </div>
   );
 }
 
@@ -107,25 +46,107 @@ function ThemeToggle() {
   );
 }
 
+/** Edit-menu commands act on whatever input has focus (the menu never steals it). */
+const exec = (cmd: string) => () => document.execCommand(cmd);
+const paste = async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.execCommand('insertText', false, text);
+  } catch {}
+};
+
 export function MenuBar() {
-  const focusedId = useWindowStore((s) => s.focusedId);
   const windows = useWindowStore((s) => s.windows);
+  const focusedId = useWindowStore((s) => s.focusedId);
+  const fullscreenId = useWindowStore((s) => s.fullscreenId);
+  const { openApp, closeWindow, focusWindow, minimizeWindow, toggleMaximize, enterFullscreen, exitFullscreen } = useWindowStore.getState();
+  const { theme, setTheme } = useTheme();
+  const mounted = useMounted();
+  const [openId, setOpenId] = useState<string | null>(null);
+
   const active = windows.find((w) => w.id === focusedId);
-  const appName = active ? getAppMeta(active.appId).name : 'Finder';
+  // With nothing focused the desktop belongs to Files, this OS's Finder.
+  const appId = active?.appId ?? 'files';
+  const appName = getAppMeta(appId).name;
+  const sameApp = windows.filter((w) => w.appId === appId);
+
+  const logo: MenuEntry[] = [
+    { label: 'About This Site', onSelect: () => openApp('welcome') },
+    { label: 'About Me', onSelect: () => openApp('about') },
+    { label: 'System Settings…', onSelect: () => openApp('settings') },
+    'sep',
+    { label: 'View Source', onSelect: () => window.open('https://github.com/edkranz/blog', '_blank', 'noopener') },
+    'sep',
+    { label: 'Restart…', onSelect: () => usePower.getState().reboot() },
+    { label: 'Shut Down…', onSelect: () => usePower.getState().shutdown() },
+  ];
+
+  const app: MenuEntry[] = [
+    { label: `About ${appName}`, onSelect: () => openApp(appId) },
+    'sep',
+    { label: `Hide ${appName}`, disabled: !active, onSelect: () => active && minimizeWindow(active.id) },
+    { label: `Quit ${appName}`, disabled: sameApp.length === 0, onSelect: () => sameApp.forEach((w) => closeWindow(w.id)) },
+  ];
+
+  const file: MenuEntry[] = [
+    { label: 'New Files Window', onSelect: () => openApp('files') },
+    { label: 'New Terminal Window', onSelect: () => openApp('terminal') },
+    'sep',
+    { label: 'Close Window', disabled: !active, onSelect: () => active && closeWindow(active.id) },
+    { label: 'Close All Windows', disabled: windows.length === 0, onSelect: () => windows.forEach((w) => closeWindow(w.id)) },
+  ];
+
+  const edit: MenuEntry[] = [
+    { label: 'Undo', onSelect: exec('undo') },
+    { label: 'Redo', onSelect: exec('redo') },
+    'sep',
+    { label: 'Cut', onSelect: exec('cut') },
+    { label: 'Copy', onSelect: exec('copy') },
+    { label: 'Paste', onSelect: paste },
+    { label: 'Select All', onSelect: exec('selectAll') },
+  ];
+
+  const view: MenuEntry[] = [
+    { label: 'Day', checked: mounted && theme === 'light', onSelect: () => setTheme('light') },
+    { label: 'Night', checked: mounted && theme === 'dark', onSelect: () => setTheme('dark') },
+    { label: 'Auto', checked: mounted && theme === 'system', onSelect: () => setTheme('system') },
+    'sep',
+    { label: 'Wallpaper…', onSelect: () => openApp('settings') },
+    'sep',
+    fullscreenId
+      ? { label: 'Exit Full Screen', onSelect: exitFullscreen }
+      : { label: 'Enter Full Screen', disabled: !active, onSelect: () => active && enterFullscreen(active.id) },
+  ];
+
+  const win: MenuEntry[] = [
+    { label: 'Minimize', disabled: !active, onSelect: () => active && minimizeWindow(active.id) },
+    { label: 'Zoom', disabled: !active, onSelect: () => active && toggleMaximize(active.id) },
+    ...(windows.length
+      ? ['sep' as const, ...windows.map<MenuEntry>((w) => ({ label: w.title, checked: w.id === focusedId, onSelect: () => focusWindow(w.id) }))]
+      : []),
+  ];
+
+  const menu = { openId, setOpenId };
 
   return (
     <header
       className='os-panel absolute inset-x-0 top-0 flex select-none items-center justify-between border-b px-2.5 text-[13px] text-foreground/85'
       style={{ height: MENUBAR_H, zIndex: 9500 }}
     >
-      <div className='flex items-center gap-3'>
-        <EddieMenu />
-        <span className='font-bold'>{appName}</span>
-        <nav className='hidden items-center gap-3 font-medium text-foreground/65 sm:flex'>
-          <span>File</span>
-          <span>Edit</span>
-          <span>View</span>
-          <span>Window</span>
+      <div className='flex items-center gap-1'>
+        <Dropdown
+          id='logo'
+          title={<AppIcon iconId='face' size={18} rounded={5} />}
+          entries={logo}
+          titleClassName='grid h-[22px] w-[26px] place-items-center px-0 py-0'
+          {...menu}
+        />
+        <Dropdown id='app' title={appName} entries={app} titleClassName='font-bold' {...menu} />
+        <nav className='hidden items-center gap-1 font-medium text-foreground/70 sm:flex'>
+          <Dropdown id='file' title='File' entries={file} {...menu} />
+          <Dropdown id='edit' title='Edit' entries={edit} {...menu} />
+          <Dropdown id='view' title='View' entries={view} {...menu} />
+          <Dropdown id='window' title='Window' entries={win} {...menu} />
         </nav>
       </div>
       <div className='flex items-center gap-2.5'>
