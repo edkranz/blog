@@ -11,6 +11,37 @@ apps like About, Blog, Projects, Terminal, Contact, Settings and Minesweeper/Tet
 
 TinaCMS has been removed. Blog content is plain Markdown/MDX read from the filesystem at build time.
 
+## Working agreements
+
+- **Track requests as GitHub issues.** When Eddie asks for a feature, or reports a bug that is more than a
+  one-line fix, create an issue for it on `edkranz/blog` (`gh issue create`, with the topic labels: `app`,
+  `terminal`, `games`, `zeppelin`, `seo`, `easter-egg`, `design`, `performance`, plus `enhancement`/`bug`)
+  before or while building it, and close it (`--reason completed`) once it ships. The Todo app on the site
+  lists these issues, so they are user-visible: imperative titles, 1-3 line bodies, no chatter. Trivial
+  tweaks (copy, a colour, a one-liner) do not need an issue. `gh` may need `gh auth switch --user edkranz`
+  (the work account is read-only on this repo); switch back afterwards.
+- **Deploys** are Vercel's GitHub integration: every push to `main` is a production deployment. "Deploy"
+  means commit in logical groups and push `main`.
+- **Verify in the browser** (Playwright via `uv run --with playwright python …`) before calling anything
+  done; there is no unit-test suite. `pnpm` v11 needs the direct `./node_modules/.bin/*` calls in a non-TTY.
+
+## Voice & copy — it has to feel like a real OS
+
+- **No tips, hints, onboarding or "try X" copy anywhere.** No "Tip:" boxes, no "Type 'help' to get
+  started", no "click here to…", no "(see ps)" tails on usage errors, no motd. People discover features
+  by poking around — that is the point of the site.
+- **Real-terminal tone.** The terminal opens with `Last login: …` and a prompt, nothing else. Errors read
+  like coreutils (`rm: x: No such file or directory`, `eksh: command not found: x`). Jokes are fine as
+  *easter eggs* (`sudo`, `sl`, `rm -rf /`), never as guidance.
+- **No AI-fluff.** No taglines under app titles, no explanatory paragraphs, no "this loads a 6.5 MB
+  build on demand" notes, no wordmarks/branding sprinkled in corners. If a sentence exists to explain
+  the UI rather than to *be* the UI, delete it.
+- **Less is more on screens like the kernel panic**: glyph, the four "restart your computer" lines, the
+  dog. Nothing below the fold.
+- Seed files in the virtual FS (`lib/os/filesystem.ts`) are in-universe documents, not tutorials.
+- **No em dashes** in any user-facing copy (UI, metadata, JSON content, terminal output). Use a comma,
+  colon, period or parentheses instead. Code comments are the only exception.
+
 ## Commands
 
 ```bash
@@ -50,7 +81,8 @@ pnpm start        # Production server (next start)
 
 - `store.ts` — Zustand window-manager store (open/close/focus/move/resize/min/max, z-order). Action
   `openApp(appId, opts)` focuses an existing single-instance window or spawns a cascaded one.
-- `prefs.ts` — persisted Zustand store (wallpaper per theme, reduce-motion).
+- `prefs.ts` — persisted Zustand store (wallpaper per theme). Motion only respects the OS-level
+  `prefers-reduced-motion` media query (`usePrefersReducedMotion`); there is no in-app toggle.
 - `types.ts`, `constants.ts`, `hooks.ts` (useMounted / useIsMobile / useViewportSize / reduced-motion).
 
 ### Content (`lib/posts.ts`, `lib/eddie.ts`)
@@ -58,7 +90,44 @@ pnpm start        # Production server (next start)
 - `lib/posts.ts` reads `content/posts/*.mdx` with `gray-matter` (fs, build time). The Blog app renders
   the raw Markdown with `react-markdown` + `remark-gfm`. Frontmatter: title, date, excerpt, tags,
   heroImg, hideFromBlogList.
-- `lib/eddie.ts` — single source of truth for profile, socials, technologies, skills, projects, hobbies.
+- `lib/eddie.ts` — single source of truth for profile, socials, technologies, skills, hobbies.
+- `content/projects.json` — the Projects data (`Project[]`; `lib/eddie.ts` re-exports it as `projects`).
+  Edit the JSON, not TypeScript. It is a static import, so both the client apps and the SEO layer see it.
+- `lib/os/filesystem.ts` — a **writable virtual file system** (dirs / text / markdown / image / link /
+  `.app` nodes, seeded from `lib/eddie.ts`). The live tree is persisted in `lib/os/fs-store.ts`
+  (localStorage; bump `SEED_VERSION` when the seed changes). Shared by the **Terminal** and the **Files**
+  app (`apps/files-app.tsx`, a Finder-style browser). Add seed content by editing the tree here.
+
+### Terminal (`components/os/apps/terminal/`)
+
+- `shell.ts` — the `eksh` interpreter: quoting, `$VAR`/`${VAR}`/`$?` expansion, globs, aliases,
+  `VAR=value`, `;` `&&` `||`, `|` pipelines, `>`/`>>` redirection. Expansion happens per statement.
+- `commands.ts` — the command registry (`{ name, usage, desc, group, run(ctx) }`). `help`, `man`, `which`
+  and tab-completion all derive from it, so **add a command = add one entry**. Anything that touches
+  the OS (windows, theme, wallpaper, posts, power) goes through `ctx.env.sys` (`ShellSys` in `types.ts`).
+- `terminal-app.tsx` — UI only (lines, prompt, history, nano overlay, completion). Sources
+  `~/.config/eksh.rc` on startup (aliases/exports), and prints only a `Last login:` line.
+- **Easter egg**: `rm -rf /` (or `/*`, or the fork bomb) runs a meltdown in the terminal, then
+  `usePower().panic()` (`lib/os/power.ts`) shows `components/os/kernel-panic.tsx` — a BSOD-blue Mac-style
+  kernel panic with Zeppelin knocked out (`public/zeppelin/dead.png`). It is **sticky per browser session**
+  (`sessionStorage`); a reload boots straight back into it, and the only way out is holding the on-screen
+  power glyph (~2 s) or closing the tab, which factory-resets the disk. `shutdown` shows
+  `shutdown-screen.tsx` (“It is now safe to turn off your computer”).
+
+### Todo (`components/os/apps/todo-app.tsx`, `lib/github-issues.ts`)
+
+The site's own GitHub issues (`profile.repo` in `lib/eddie.ts`), fetched in the browser from the public
+REST API with no token (60 req/hour/IP, so results are cached in `sessionStorage` for 10 minutes and the
+cache is served when GitHub is unreachable). Open issues are the todo list, closed ones the Done section;
+PRs are filtered out. "Suggest a feature" is a prefilled `issues/new` link. Also `todo` in the terminal.
+
+### Doom (`components/os/apps/doom-app.tsx`, `public/doom/`)
+
+DOOM 1.9 **shareware** running under **js-dos v7** (DOSBox → WebAssembly, GPL-2.0) inside an isolated
+`<iframe>` (`public/doom/index.html`). Nothing loads until the user presses **Play** — then the js-dos
+runtime (`public/doom/js-dos/`) and `doom.jsdos` (~2 MB: `DOOM.EXE` + `DOOM1.WAD` + dosbox.conf) stream
+in; closing the window unmounts the iframe. Provenance/licensing and the bundle recipe: `docs/doom.md`.
+Never ship the registered `DOOM.WAD`.
 
 ### Routing
 
@@ -113,9 +182,12 @@ square** (rounded in CSS), then downsize/optimize (`mogrify -resize 256x256 -str
 
 ### Adding an app
 
-1. Add the id to `AppId` in `lib/os/types.ts` and an entry in `lib/os/apps-meta.ts`.
+1. Add the id to `AppId` in `lib/os/types.ts` and an entry in `lib/os/apps-meta.ts`. Add an `IconId` +
+   `public/icons/<id>.png` (pixel art, see Assets) and an SVG fallback in `components/os/icons.tsx`.
 2. Build the component in `components/os/apps/` and register it in `apps/registry.tsx`.
-3. Optionally add it to `DOCK_ORDER` / `DESKTOP_ORDER` in `apps-meta.ts`.
+3. Optionally add it to `DOCK_ORDER` / `DESKTOP_ORDER` in `apps-meta.ts` (the desktop column fits 8 icons at
+   ~800px tall), the `APPS` list in `lib/os/filesystem.ts` (so it appears in `/Applications`), and
+   `NOINDEX_APPS` in `app/[...segments]/page.tsx` if it has no crawlable content.
 
 ## Path Alias
 
