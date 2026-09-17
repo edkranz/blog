@@ -7,6 +7,7 @@ import { useFsStore } from '@/lib/os/fs-store';
 import { useWindowStore } from '@/lib/os/store';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
+import { Dropdown } from '../menu';
 import type { AppContentProps } from './types';
 
 const FAVORITES: { label: string; path: string[]; glyph: string }[] = [
@@ -32,6 +33,7 @@ export function FilesApp({ win }: AppContentProps) {
   const [path, setPath] = useState<string[]>(initial);
   const [preview, setPreview] = useState<VFile | null>(null);
   const [showHidden, setShowHidden] = useState(false);
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   // The terminal re-opening Files (`open <dir>`) bumps the window nonce — jump there.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -147,24 +149,18 @@ export function FilesApp({ win }: AppContentProps) {
             )}
           </div>
           {!preview && (
-            <>
-              <button
-                type='button'
-                onClick={newFolder}
-                title='New folder'
-                className='grid h-7 w-7 place-items-center rounded-md text-[14px] transition hover:bg-foreground/10'
-              >
-                📁＋
-              </button>
-              <button
-                type='button'
-                onClick={newFile}
-                title='New file'
-                className='grid h-7 w-7 place-items-center rounded-md text-[14px] transition hover:bg-foreground/10'
-              >
-                📄＋
-              </button>
-            </>
+            <Dropdown
+              id='new'
+              title='New ▾'
+              entries={[
+                { label: 'Folder', onSelect: newFolder },
+                { label: 'Text File', onSelect: newFile },
+              ]}
+              openId={menuOpen}
+              setOpenId={setMenuOpen}
+              align='right'
+              titleClassName='h-7 px-2 text-[13px] font-medium'
+            />
           )}
           <button
             type='button'
