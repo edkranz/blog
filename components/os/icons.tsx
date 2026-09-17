@@ -92,6 +92,28 @@ export const TrashIcon = (p: SVG) => (
   </svg>
 );
 
+export const TodoIcon = (p: SVG) => (
+  <svg {...base(p)}>
+    <rect x='4.5' y='3.5' width='15' height='17' rx='2' />
+    <path d='m8 9 1.5 1.5L12.5 7.5M8 15l1.5 1.5 3-3' />
+    <path d='M14.5 9.5H17M14.5 15.5H17' />
+  </svg>
+);
+
+export const FilesIcon = (p: SVG) => (
+  <svg {...base(p)}>
+    <path d='M3.5 7.5a2 2 0 0 1 2-2h3l2 2h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2V7.5Z' />
+  </svg>
+);
+
+export const DoomIcon = (p: SVG) => (
+  <svg {...base(p)}>
+    <circle cx='12' cy='12' r='9' />
+    <path d='M8.5 9.5c1 .9 1.4 2.2 1.4 2.5M15.5 9.5c-1 .9-1.4 2.2-1.4 2.5' />
+    <path d='M8 16c1-1 2.5-1.5 4-1.5s3 .5 4 1.5' />
+  </svg>
+);
+
 export const TetrisIcon = (p: SVG) => (
   <svg {...base(p)}>
     <rect x='4.5' y='5' width='5.4' height='5.4' rx='1.2' />
@@ -109,8 +131,11 @@ export const ICONS: Record<IconId, (p: SVG) => React.JSX.Element> = {
   book: BookIcon,
   grid: GridIcon,
   terminal: TerminalIcon,
+  files: FilesIcon,
   mine: MineIcon,
+  doom: DoomIcon,
   mail: MailIcon,
+  todo: TodoIcon,
   gear: GearIcon,
   trash: TrashIcon,
 };
