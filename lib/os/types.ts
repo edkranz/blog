@@ -4,13 +4,16 @@ export type AppId =
   | 'blog'
   | 'projects'
   | 'terminal'
+  | 'files'
   | 'minesweeper'
   | 'tetris'
+  | 'doom'
   | 'contact'
+  | 'todo'
   | 'settings'
   | 'trash';
 
-export type IconId = 'face' | 'user' | 'monogram' | 'book' | 'grid' | 'terminal' | 'mine' | 'tetris' | 'mail' | 'gear' | 'trash';
+export type IconId = 'face' | 'user' | 'monogram' | 'book' | 'grid' | 'terminal' | 'files' | 'mine' | 'tetris' | 'doom' | 'mail' | 'todo' | 'gear' | 'trash';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 

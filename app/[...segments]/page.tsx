@@ -24,15 +24,15 @@ function isKnownRoute(segments: string[]): boolean {
 }
 
 const ROUTE_DESC: Record<string, string> = {
-  about: 'About Eddie Kranz — Software Engineer at SSW. Skills, experience and the tech I build with.',
+  about: 'About Eddie Kranz, Software Engineer at SSW. Skills, experience and the tech I build with.',
   blog: 'Writing about software development, AI workflows and tinkering by Eddie Kranz.',
-  projects: 'Projects by Eddie Kranz — a browser desktop, AI workflows, VR research and more.',
+  projects: 'Projects by Eddie Kranz: a browser desktop, AI workflows, VR research and more.',
   contact: 'Get in touch with Eddie Kranz.',
 };
 
 // Interactive apps/games have no unique crawlable content (their static layer is the
 // home overview), so keep them out of the index to avoid thin/duplicate pages.
-const NOINDEX_APPS = new Set(['terminal', 'minesweeper', 'tetris', 'settings', 'trash']);
+const NOINDEX_APPS = new Set(['terminal', 'files', 'minesweeper', 'tetris', 'doom', 'todo', 'settings', 'trash']);
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { segments } = await params;

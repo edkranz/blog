@@ -6,7 +6,7 @@ export const APP_META: Record<AppId, AppMeta> = {
     name: 'Welcome',
     iconId: 'monogram',
     accent: 'var(--brand-red)',
-    defaultSize: { w: 480, h: 568 },
+    defaultSize: { w: 480, h: 512 },
     minSize: { w: 340, h: 420 },
     single: true,
     dock: true,
@@ -56,6 +56,17 @@ export const APP_META: Record<AppId, AppMeta> = {
     dock: true,
     desktop: false,
   },
+  files: {
+    id: 'files',
+    name: 'Files',
+    iconId: 'files',
+    accent: '#3aa6ff',
+    defaultSize: { w: 720, h: 500 },
+    minSize: { w: 360, h: 320 },
+    single: true,
+    dock: true,
+    desktop: true,
+  },
   minesweeper: {
     id: 'minesweeper',
     name: 'Minesweeper',
@@ -78,6 +89,17 @@ export const APP_META: Record<AppId, AppMeta> = {
     dock: true,
     desktop: true,
   },
+  doom: {
+    id: 'doom',
+    name: 'Doom',
+    iconId: 'doom',
+    accent: '#c2381f',
+    defaultSize: { w: 860, h: 600 },
+    minSize: { w: 480, h: 380 },
+    single: true,
+    dock: true,
+    desktop: true,
+  },
   contact: {
     id: 'contact',
     name: 'Contact',
@@ -88,6 +110,17 @@ export const APP_META: Record<AppId, AppMeta> = {
     single: true,
     dock: true,
     desktop: false,
+  },
+  todo: {
+    id: 'todo',
+    name: 'Todo',
+    iconId: 'todo',
+    accent: 'var(--brand-yellow)',
+    defaultSize: { w: 560, h: 600 },
+    minSize: { w: 340, h: 360 },
+    single: true,
+    dock: true,
+    desktop: true,
   },
   settings: {
     id: 'settings',
@@ -118,7 +151,20 @@ export function getAppMeta(id: AppId): AppMeta {
 }
 
 /** Order of launchers in the dock (trash is rendered separately, after a divider). */
-export const DOCK_ORDER: AppId[] = ['welcome', 'about', 'blog', 'projects', 'terminal', 'minesweeper', 'tetris', 'contact', 'settings'];
+export const DOCK_ORDER: AppId[] = [
+  'welcome',
+  'about',
+  'blog',
+  'projects',
+  'files',
+  'terminal',
+  'minesweeper',
+  'tetris',
+  'doom',
+  'todo',
+  'contact',
+  'settings',
+];
 
 /** Order of icons on the desktop surface. */
-export const DESKTOP_ORDER: AppId[] = ['about', 'blog', 'projects', 'minesweeper', 'tetris', 'trash'];
+export const DESKTOP_ORDER: AppId[] = ['about', 'blog', 'projects', 'files', 'minesweeper', 'tetris', 'doom', 'trash'];
