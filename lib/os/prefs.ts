@@ -18,9 +18,7 @@ export const WALLPAPERS: { id: Wallpaper; label: string; className: string; dark
 type PrefsStore = {
   wallpaperLight: Wallpaper;
   wallpaperDark: Wallpaper;
-  reduceMotion: boolean;
   setWallpaper: (theme: 'light' | 'dark', wp: Wallpaper) => void;
-  setReduceMotion: (v: boolean) => void;
 };
 
 export const usePrefs = create<PrefsStore>()(
@@ -28,12 +26,10 @@ export const usePrefs = create<PrefsStore>()(
     (set) => ({
       wallpaperLight: 'retro',
       wallpaperDark: 'retro-night',
-      reduceMotion: false,
       setWallpaper: (theme, wp) => set(theme === 'light' ? { wallpaperLight: wp } : { wallpaperDark: wp }),
-      setReduceMotion: (v) => set({ reduceMotion: v }),
     }),
-    { name: 'eddie-os-prefs' },
-  ),
+    { name: 'eddie-os-prefs' }
+  )
 );
 
 export function wallpaperClass(id: Wallpaper): string {

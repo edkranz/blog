@@ -3,7 +3,6 @@
 import { getAppMeta } from '@/lib/os/apps-meta';
 import { getWorkArea } from '@/lib/os/constants';
 import { useIsMobile, usePrefersReducedMotion, useViewportSize } from '@/lib/os/hooks';
-import { usePrefs } from '@/lib/os/prefs';
 import { useWindowStore } from '@/lib/os/store';
 import type { OSWindow } from '@/lib/os/types';
 import { AnimatePresence } from 'motion/react';
@@ -16,9 +15,7 @@ export function WindowManager() {
   const fullscreenId = useWindowStore((s) => s.fullscreenId);
   const mobile = useIsMobile();
   const { w: vw, h: vh } = useViewportSize();
-  const systemReduce = usePrefersReducedMotion();
-  const prefReduce = usePrefs((s) => s.reduceMotion);
-  const reduceMotion = systemReduce || prefReduce;
+  const reduceMotion = usePrefersReducedMotion();
 
   const visible = windows.filter((w) => !w.minimized);
 

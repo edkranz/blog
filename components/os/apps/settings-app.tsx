@@ -26,7 +26,7 @@ function ThemeSeg() {
             onClick={() => setTheme(o.id)}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-semibold transition',
-              active ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              active ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
             )}
           >
             <o.icon size={15} /> {o.label}
@@ -50,7 +50,7 @@ function WallpaperRow({ which }: { which: 'light' | 'dark' }) {
           onClick={() => setWallpaper(which, w.id as Wallpaper)}
           className={cn(
             'overflow-hidden rounded-xl border-2 text-left transition',
-            current === w.id ? 'border-primary' : 'border-transparent hover:border-foreground/20',
+            current === w.id ? 'border-primary' : 'border-transparent hover:border-foreground/20'
           )}
         >
           <div className={cn('h-12 w-20', w.className)} />
@@ -63,7 +63,6 @@ function WallpaperRow({ which }: { which: 'light' | 'dark' }) {
 
 export function SettingsApp() {
   const mounted = useMounted();
-  const { reduceMotion, setReduceMotion } = usePrefs();
 
   return (
     <AppScroll className='bg-card'>
@@ -83,22 +82,6 @@ export function SettingsApp() {
         <section className='mt-6'>
           <SectionLabel>Night wallpaper</SectionLabel>
           <WallpaperRow which='dark' />
-        </section>
-
-        <section className='mt-7'>
-          <SectionLabel>Motion</SectionLabel>
-          <label className='flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3'>
-            <span>
-              <span className='block text-sm font-semibold'>Reduce motion</span>
-              <span className='block text-xs text-muted-foreground'>Calmer window & dock animations</span>
-            </span>
-            <input
-              type='checkbox'
-              checked={reduceMotion}
-              onChange={(e) => setReduceMotion(e.target.checked)}
-              className='h-5 w-5 accent-[var(--brand-red)]'
-            />
-          </label>
         </section>
 
         <section className='mt-7'>
