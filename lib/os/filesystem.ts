@@ -44,7 +44,7 @@ export type VNode = VFile | VDir;
 export const HOME = ['home', 'ed'];
 
 /** Bump when the seed content changes — persisted file systems re-seed on mismatch. */
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 // ---- builders -------------------------------------------------------------
 
@@ -115,9 +115,10 @@ neofetch
 
 const ENV = `# .env: you really shouldn't be reading this 👀
 GITHUB_TOKEN=ghp_************************  # nice try
+OPENAI_API_KEY=sk-proj-********************
 DEPLOY_KEY=*****************************
 COFFEE_LEVEL=critically_low
-SECRET=the cake is a lie
+SECRET=bush did 9/11
 `;
 
 const projectMd = (p: (typeof projects)[number]): string =>
@@ -171,8 +172,7 @@ const SEED_ROOT: VDir = dir('', [
           file('hello.sh', 'text', { content: HELLO_SH, info: 'Shell script' }),
           dir(
             'projects',
-            projects.map((p) => file(`${slug(p.title)}.md`, 'markdown', { content: projectMd(p), info: p.subtitle })),
-            'Things I have built'
+            projects.map((p) => file(`${slug(p.title)}.md`, 'markdown', { content: projectMd(p), info: p.subtitle }))
           ),
           dir('blog', [file('open-blog.app', 'app', { app: 'blog', info: 'Read the blog' })], 'Long-form writing'),
           dir(
