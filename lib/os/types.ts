@@ -11,7 +11,8 @@ export type AppId =
   | 'contact'
   | 'todo'
   | 'settings'
-  | 'trash';
+  | 'trash'
+  | 'editor';
 
 export type IconId = 'face' | 'user' | 'monogram' | 'book' | 'grid' | 'terminal' | 'files' | 'mine' | 'tetris' | 'doom' | 'mail' | 'todo' | 'gear' | 'trash';
 

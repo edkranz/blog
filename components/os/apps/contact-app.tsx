@@ -1,23 +1,26 @@
 'use client';
 
-import { profile, socials } from '@/lib/eddie';
+import { PROFILE_FILE } from '@/lib/admin/types';
+import { useContent } from '@/lib/os/content';
 import { Github, Linkedin, type LucideIcon, Mail, Send, Youtube } from 'lucide-react';
 import { useState } from 'react';
+import { Editable } from '../editable';
 import { AppScroll, Chunky } from '../ui';
 
 const ICONS: Record<string, LucideIcon> = { github: Github, linkedin: Linkedin, youtube: Youtube, email: Mail };
 
 export function ContactApp() {
+  const {
+    site: { profile, contact, socials },
+  } = useContent();
   const [message, setMessage] = useState('');
   const mailto = `mailto:${profile.email}?subject=${encodeURIComponent('Hello from kranz.au')}&body=${encodeURIComponent(message)}`;
 
   return (
     <AppScroll className='bg-card'>
       <div className='px-6 py-7'>
-        <h1 className='text-2xl font-bold tracking-tight'>Get in touch</h1>
-        <p className='mt-1.5 text-[14px] leading-relaxed text-muted-foreground'>
-          Got a project, a question, or just want to say hi? I&apos;d love to hear from you.
-        </p>
+        <Editable file={PROFILE_FILE} path='contact.heading' value={contact.heading} as='h1' className='text-2xl font-bold tracking-tight' />
+        <Editable file={PROFILE_FILE} path='contact.lead' value={contact.lead} as='p' multiline className='mt-1.5 text-[14px] leading-relaxed text-muted-foreground' />
 
         <a
           href={`mailto:${profile.email}`}
@@ -28,7 +31,7 @@ export function ContactApp() {
           </span>
           <div>
             <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground'>Email</div>
-            <div className='text-[15px] font-bold'>{profile.email}</div>
+            <Editable file={PROFILE_FILE} path='profile.email' value={profile.email} as='div' className='text-[15px] font-bold' />
           </div>
         </a>
 
@@ -58,6 +61,7 @@ export function ContactApp() {
             .filter((s) => ICONS[s.id])
             .map((s) => {
               const Icon = ICONS[s.id];
+              const idx = socials.indexOf(s);
               return (
                 <a
                   key={s.id}
@@ -67,15 +71,15 @@ export function ContactApp() {
                   className='flex items-center gap-3 rounded-xl border px-4 py-3 transition hover:bg-secondary/50'
                 >
                   <Icon size={18} className='text-foreground/70' />
-                  <span className='flex-1 text-sm font-semibold'>{s.label}</span>
-                  <span className='text-[13px] text-muted-foreground'>{s.handle}</span>
+                  <Editable file={PROFILE_FILE} path={`socials.${idx}.label`} value={s.label} className='flex-1 text-sm font-semibold' />
+                  <Editable file={PROFILE_FILE} path={`socials.${idx}.handle`} value={s.handle} className='text-[13px] text-muted-foreground' />
                 </a>
               );
             })}
         </div>
 
         <p className='mt-6 text-center text-xs text-muted-foreground'>
-          Based in {profile.location} · usually replies within a day
+          Based in {profile.location} · <Editable file={PROFILE_FILE} path='contact.availability' value={contact.availability} />
         </p>
       </div>
     </AppScroll>
