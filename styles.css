@@ -558,3 +558,20 @@
   outline: 2px solid var(--brand-blue);
   background: color-mix(in oklab, var(--brand-blue) 6%, transparent);
 }
+
+/* MDXEditor inside an OS window: let the window scroll, keep the toolbar pinned. */
+.eos-mdx {
+  --baseBg: var(--card);
+  --basePageBg: var(--card);
+  font-family: inherit;
+}
+.eos-mdx [role='toolbar'] {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-radius: 0;
+}
+.eos-mdx .prose {
+  min-height: 320px;
+  padding: 16px 20px;
+}
