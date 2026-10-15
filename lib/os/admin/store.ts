@@ -91,25 +91,34 @@ export const useAdminStore = create<AdminState>((set, get) => {
     init: async () => {
       set({ enabled: true });
       try {
-        const session = await api<AdminUser>('session');
-        set({ session });
-        let branch = 'main';
-        try {
-          branch = sessionStorage.getItem(BRANCH_KEY) ?? 'main';
-        } catch {}
-        await get()
-          .load(branch)
-          .catch(() => get().load('main'));
+        set({ session: await api<AdminUser>('session') });
       } catch {
         set({ session: null });
+        return;
       }
+      let branch = 'main';
+      try {
+        branch = sessionStorage.getItem(BRANCH_KEY) ?? 'main';
+      } catch {}
+      // A branch that fails to load stays signed in: load() has set the error, and the branch menu still works.
+      await get()
+        .load(branch)
+        .catch(() => (branch === 'main' ? undefined : get().load('main')))
+        .catch(() => {});
     },
 
     load: async (branch) => {
       const before = get();
       set({ busy: 'loading', error: null });
       try {
-        const [snap, list] = await Promise.all([api<AdminSnapshot>(`content?branch=${encodeURIComponent(branch)}`), api<{ branches: string[] }>('branches')]);
+        // The branch list is kept even when this branch has no content, so another branch can still be picked.
+        const [snap, list] = await Promise.all([
+          api<AdminSnapshot>(`content?branch=${encodeURIComponent(branch)}`),
+          api<{ branches: string[] }>('branches').then((l) => {
+            set({ branches: l.branches });
+            return l;
+          }),
+        ]);
         // Reloading the same branch (e.g. after "branch moved") keeps pending edits: rebase them onto what is there now.
         const pending = branch === before.branch && before.remote ? await rebasePending(before, snap) : get().pending;
         set({ branch: snap.branch, head: snap.head, remote: { profile: snap.profile, projects: snap.projects, posts: snap.posts }, branches: list.branches, drafts: {}, pending });

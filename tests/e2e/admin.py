@@ -132,6 +132,21 @@ with sync_playwright() as p:
     visitor.goto(f"{BASE}/")
     expect(visitor.locator(".os-root").get_by_text("Edited by e2e.")).to_have_count(0)
 
+    # A branch without editable content (main before content/profile.json lands) keeps the admin signed in
+    # and the other branches reachable.
+    assert post(page, "branches", {"name": "Has Content", "from": "main"}).ok
+    page.evaluate("sessionStorage.clear()")  # start on main, not the remembered branch
+    page.route(
+        "**/api/admin/content?branch=main",
+        lambda route: route.fulfill(status=404, content_type="application/json", body='{"error":"main has no content/profile.json"}'),
+    )
+    page.goto(f"{BASE}/admin")
+    expect(page.get_by_text("Load failed: main has no content/profile.json")).to_be_visible(timeout=60_000)
+    expect(page.get_by_role("link", name="Sign in with GitHub")).to_have_count(0)
+    page.locator("header").get_by_role("button", name="main").click()
+    page.get_by_text("drafts/has-content").click()
+    expect(page.locator('[data-editable="profile.blurb"]')).to_be_visible(timeout=15_000)
+
     assert not errors, errors
     browser.close()
     print("admin e2e: ok")
