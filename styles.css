@@ -543,3 +543,18 @@
     animation: none;
   }
 }
+
+/* /admin: everything click-to-edit wears a dashed outline. */
+.eos-editable {
+  outline: 1.5px dashed color-mix(in oklab, var(--brand-blue) 45%, transparent);
+  outline-offset: 3px;
+  border-radius: 4px;
+  cursor: text;
+}
+.eos-editable:hover {
+  outline-color: var(--brand-blue);
+}
+.eos-editable:focus {
+  outline: 2px solid var(--brand-blue);
+  background: color-mix(in oklab, var(--brand-blue) 6%, transparent);
+}
