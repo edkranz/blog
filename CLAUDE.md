@@ -23,7 +23,7 @@ TinaCMS has been removed. Blog content is plain Markdown/MDX read from the files
 - **Deploys** are Vercel's GitHub integration: every push to `main` is a production deployment. "Deploy"
   means commit in logical groups and push `main`.
 - **Verify in the browser** (Playwright via `uv run --with playwright python …`) before calling anything
-  done; there is no unit-test suite. `pnpm` v11 needs the direct `./node_modules/.bin/*` calls in a non-TTY.
+  done. `pnpm test` runs the `node --test` unit tests for `lib/admin` (call it directly with `node` in a non-TTY). `pnpm` v11 needs the direct `./node_modules/.bin/*` calls in a non-TTY.
 
 ## Voice & copy — it has to feel like a real OS
 
@@ -92,7 +92,8 @@ pnpm start        # Production server (next start)
 - `lib/posts.ts` reads `content/posts/*.mdx` with `gray-matter` (fs, build time). The Blog app renders
   the raw Markdown with `react-markdown` + `remark-gfm`. Frontmatter: title, date, excerpt, tags,
   heroImg, hideFromBlogList.
-- `lib/eddie.ts` — single source of truth for profile, socials, technologies, skills, hobbies.
+- `lib/eddie.ts` re-exports `content/profile.json` (profile, about, contact, socials, technologies, skills, hobbies).
+  Edit the JSON (or use /admin), not TypeScript.
 - `content/projects.json` — the Projects data (`Project[]`; `lib/eddie.ts` re-exports it as `projects`).
   Edit the JSON, not TypeScript. It is a static import, so both the client apps and the SEO layer see it.
 - `lib/os/filesystem.ts` — a **writable virtual file system** (dirs / text / markdown / image / link /
@@ -130,6 +131,20 @@ DOOM 1.9 **shareware** running under **js-dos v7** (DOSBox → WebAssembly, GPL-
 runtime (`public/doom/js-dos/`) and `doom.jsdos` (~2 MB: `DOOM.EXE` + `DOOM1.WAD` + dosbox.conf) stream
 in; closing the window unmounts the iframe. Provenance/licensing and the bundle recipe: `docs/doom.md`.
 Never ship the registered `DOOM.WAD`.
+
+### Admin (`app/admin/`, `app/api/admin/`, `lib/admin/`, `components/os/admin/`)
+
+`/admin` boots the OS in edit mode behind GitHub sign-in (allowlist `ADMIN_GITHUB_USERS`, default `edkranz`).
+The GitHub token is AES-GCM sealed into the httpOnly `eos_admin` cookie (`lib/admin/session.ts`). Editable copy
+lives in `content/profile.json` + `content/projects.json`; components read it through `useContent()` and wrap
+strings in `<Editable file path value>`. Posts are edited in the `editor` app (MDXEditor, lazy-loaded). Pending
+edits sit in `lib/os/admin/store.ts` until Save, which commits every change as one commit through the Git Data API
+(`lib/admin/github-backend.ts`), refusing if the branch moved. Draft branches are `drafts/<name>`; Publish
+squash-merges a PR into `main`. Env: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `ADMIN_SESSION_SECRET`.
+Local E2E: `ADMIN_FAKE_GITHUB=1` swaps GitHub for an in-memory fake (ignored in production);
+`node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test "tests/**/*.test.ts"` runs the unit tests (what `pnpm test` runs),
+`uv run --with playwright python tests/e2e/admin.py http://localhost:3011` the E2E against
+`ADMIN_FAKE_GITHUB=1 ./node_modules/.bin/next dev --turbopack -p 3011`.
 
 ### Routing
 

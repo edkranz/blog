@@ -44,11 +44,12 @@ export function newSession(token: string, login: string, avatarUrl: string): Ses
   return { token, login, avatarUrl, exp: Math.floor(Date.now() / 1000) + SESSION_TTL_S };
 }
 
+// Dev-only (the fake backend): ignored by output tracing so the admin functions don't bundle the whole repo.
 function seedFromDisk(): Record<string, string> {
-  const root = process.cwd();
   const files: Record<string, string> = {};
-  for (const f of [PROFILE_FILE, PROJECTS_FILE]) files[f] = fs.readFileSync(path.join(root, f), 'utf8');
-  for (const f of fs.readdirSync(path.join(root, POSTS_DIR))) files[`${POSTS_DIR}/${f}`] = fs.readFileSync(path.join(root, POSTS_DIR, f), 'utf8');
+  for (const f of [PROFILE_FILE, PROJECTS_FILE]) files[f] = fs.readFileSync(path.join(/*turbopackIgnore: true*/ process.cwd(), f), 'utf8');
+  const posts = path.join(/*turbopackIgnore: true*/ process.cwd(), POSTS_DIR);
+  for (const f of fs.readdirSync(posts)) files[`${POSTS_DIR}/${f}`] = fs.readFileSync(path.join(/*turbopackIgnore: true*/ posts, f), 'utf8');
   return files;
 }
 

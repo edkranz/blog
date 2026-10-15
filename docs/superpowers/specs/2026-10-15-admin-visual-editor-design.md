@@ -109,8 +109,9 @@ preview), and a draft branch can be published to `main` from inside the OS.
   seeded from the working tree, so Playwright can drive login → edit → save → branch → publish without real
   pushes.
 - Playwright (`uv run --with playwright python …`) checks: visitors see no admin UI or MDXEditor chunk;
-  `/admin` shows the login screen; with the fake, in-place edits, a post edit round-trip (Markdown
-  unchanged except the edit, `:::sketch` intact), branch save and publish.
+  `/admin` shows the login screen; with the fake, in-place edits, a post edit round-trip (MDXEditor
+  may normalise Markdown formatting on the first edit; content and `::sketch` directives must survive),
+  branch save and publish.
 - One real smoke test against a throwaway branch on `edkranz/blog`, then deleted.
 
 ## Out of scope
