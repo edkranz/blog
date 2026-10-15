@@ -8,6 +8,7 @@
     "build-local": "next build && next-sitemap",
     "start": "next start -p 3001",
     "lint": "biome lint",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"tests/**/*.test.ts\"",
     "dev:build": "next build"
   },
   "devDependencies": {
