@@ -4,6 +4,7 @@ import { useAdminStore } from '@/lib/os/admin/store';
 import { useEffect } from 'react';
 import { AdminDialog } from './dialog';
 import { LoginScreen } from './login-screen';
+import { SaveBar } from './save-bar';
 
 export function AdminLayer() {
   const session = useAdminStore((s) => s.session);
@@ -22,5 +23,10 @@ export function AdminLayer() {
 
   if (session === undefined) return null;
   if (session === null) return <LoginScreen />;
-  return <AdminDialog />;
+  return (
+    <>
+      <SaveBar />
+      <AdminDialog />
+    </>
+  );
 }
