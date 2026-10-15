@@ -84,8 +84,10 @@ export function EditorApp({ win }: AppContentProps) {
     };
   }, [editing, isNew, initialSlug]);
 
-  // A new post stops being "fresh" once it has been saved: its slug (and file) are then fixed.
-  const fresh = isNew && !existing.some((p) => p.path === path);
+  // A new post stops being "fresh" once the file this editor staged has been saved: its slug is then fixed.
+  // (Matching on `path` alone would let a colliding title adopt, and overwrite, someone else's post.)
+  const [ownPath, setOwnPath] = useState<string | null>(null);
+  const fresh = isNew && !(ownPath !== null && existing.some((p) => p.path === ownPath));
   const slugTaken = (slug: string) => fresh && existing.some((p) => p.slug === slug);
 
   const update = useCallback(
@@ -98,7 +100,10 @@ export function EditorApp({ win }: AppContentProps) {
       setDraft(next);
       if (fresh) setPath(nextPath);
       updateProps(win.id, { slug: fresh ? null : next.slug }, next.title || 'Untitled');
-      if (isValidSlug(next.slug) && !slugTaken(next.slug)) useAdminStore.getState().stagePost(next, nextPath, fresh, prev.slug || undefined);
+      if (isValidSlug(next.slug) && !slugTaken(next.slug)) {
+        useAdminStore.getState().stagePost(next, nextPath, fresh, prev.slug || undefined);
+        if (fresh) setOwnPath(nextPath);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [fresh, slugTouched, path, win.id, existing]

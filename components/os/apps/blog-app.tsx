@@ -1,10 +1,15 @@
 'use client';
 
+import type { AdminPostMeta } from '@/lib/admin/types';
+import { confirmAction } from '@/lib/os/admin/dialog-store';
+import { openEditor } from '@/lib/os/admin/open-editor';
+import { useAdminStore } from '@/lib/os/admin/store';
+import { useEditablePosts } from '@/lib/os/content';
 import { useWindowStore } from '@/lib/os/store';
 import type { PostMeta as PostData } from '@/lib/posts';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { ArrowLeft, CalendarDays, Clock, Rss } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock, EyeOff, Plus, Rss, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MarkdownContent } from '../blog-content';
 import { GiscusComments } from '../giscus';
@@ -25,7 +30,7 @@ function PostMeta({ post }: { post: PostData }) {
   );
 }
 
-function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string) => void }) {
+function PostList({ posts, onOpen, editable }: { posts: (PostData | AdminPostMeta)[]; onOpen: (slug: string) => void; editable?: boolean }) {
   return (
     <div className='flex h-full flex-col bg-card'>
       <div className='flex items-center justify-between border-b px-5 py-3.5'>
@@ -35,16 +40,29 @@ function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string)
             {posts.length} post{posts.length === 1 ? '' : 's'} · writing about code, AI & tinkering
           </p>
         </div>
-        <a
-          href='/feed.xml'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='grid h-9 w-9 place-items-center rounded-lg border text-muted-foreground transition hover:text-primary'
-          aria-label='RSS feed'
-          title='RSS feed'
-        >
-          <Rss size={16} />
-        </a>
+        <div className='flex gap-2'>
+          {editable ? (
+            <button
+              type='button'
+              onClick={() => openEditor(null, 'Untitled')}
+              className='grid h-9 w-9 place-items-center rounded-lg border text-muted-foreground transition hover:text-primary'
+              aria-label='New post'
+              title='New post'
+            >
+              <Plus size={16} />
+            </button>
+          ) : null}
+          <a
+            href='/feed.xml'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='grid h-9 w-9 place-items-center rounded-lg border text-muted-foreground transition hover:text-primary'
+            aria-label='RSS feed'
+            title='RSS feed'
+          >
+            <Rss size={16} />
+          </a>
+        </div>
       </div>
       <AppScroll className='flex-1 px-4 py-4'>
         {posts.length === 0 ? (
@@ -52,13 +70,16 @@ function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string)
         ) : (
           <ul className='space-y-3'>
             {posts.map((post) => (
-              <li key={post.slug}>
+              <li key={post.slug} className='group/post relative'>
                 <button
                   type='button'
                   onClick={() => onOpen(post.slug)}
                   className='group w-full rounded-xl border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-[0_8px_22px_-10px_rgba(0,0,0,0.4)]'
                 >
-                  <h2 className='text-[16px] font-bold leading-snug transition-colors group-hover:text-primary'>{post.title}</h2>
+                  <h2 className='text-[16px] font-bold leading-snug transition-colors group-hover:text-primary'>
+                    {post.hideFromBlogList ? <EyeOff size={13} className='mr-1.5 inline align-[-1px] text-muted-foreground' /> : null}
+                    {post.title}
+                  </h2>
                   <div className='mt-1.5'>
                     <PostMeta post={post} />
                   </div>
@@ -71,6 +92,18 @@ function PostList({ posts, onOpen }: { posts: PostData[]; onOpen: (slug: string)
                     </div>
                   ) : null}
                 </button>
+                {editable ? (
+                  <button
+                    type='button'
+                    aria-label={`Delete ${post.title}`}
+                    onClick={async () => {
+                      if (await confirmAction(`Delete “${post.title}”?`, 'Delete')) useAdminStore.getState().deletePost(post as AdminPostMeta);
+                    }}
+                    className='absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-lg text-muted-foreground opacity-0 transition hover:bg-secondary hover:text-destructive group-hover/post:opacity-100 focus:opacity-100'
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -123,6 +156,7 @@ function PostReader({ post, body, onBack }: { post: PostData; body: string | und
 
 export function BlogApp({ win }: AppContentProps) {
   const { posts } = useOSData();
+  const editPosts = useEditablePosts();
   const updateProps = useWindowStore((s) => s.updateProps);
   const initial = typeof win.props?.slug === 'string' ? (win.props.slug as string) : null;
   const [activeSlug, setActiveSlug] = useState<string | null>(initial);
@@ -155,6 +189,9 @@ export function BlogApp({ win }: AppContentProps) {
       cancelled = true;
     };
   }, [activeSlug, bodies]);
+
+  // /admin: every post (hidden ones too) opens in the editor instead of the reader.
+  if (editPosts) return <PostList posts={editPosts} onOpen={(slug) => openEditor(slug, editPosts.find((p) => p.slug === slug)?.title ?? '')} editable />;
 
   const active = activeSlug ? posts.find((p) => p.slug === activeSlug) : undefined;
 
