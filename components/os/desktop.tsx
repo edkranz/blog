@@ -20,8 +20,10 @@ const Zeppelin = dynamic(() => import('./zeppelin').then((m) => m.Zeppelin), { s
 // Power states are rare, so their screens only load when something goes (deliberately) wrong.
 const KernelPanic = dynamic(() => import('./kernel-panic').then((m) => m.KernelPanic), { ssr: false });
 const ShutdownScreen = dynamic(() => import('./shutdown-screen').then((m) => m.ShutdownScreen), { ssr: false });
+// /admin only: sign-in, save bar and dialogs never ship in the visitor's initial bundle.
+const AdminLayer = dynamic(() => import('./admin/admin-layer').then((m) => m.AdminLayer), { ssr: false });
 
-export function Desktop({ initialPath }: { initialPath?: string[] }) {
+export function Desktop({ initialPath, admin }: { initialPath?: string[]; admin?: boolean }) {
   const mounted = useMounted();
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
@@ -66,6 +68,8 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
   // Keep the address bar in sync with the focused window (+ ?view=full when fullscreen).
   useEffect(() => {
     if (!mounted) return;
+    // /admin keeps its own URL.
+    if (admin) return;
     // Don't touch a giscus OAuth callback URL (…?giscus=<token>): the giscus client
     // needs to read that param to finish sign-in, and it strips the param itself once done.
     if (window.location.search.includes('giscus=')) return;
@@ -76,7 +80,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
     if (window.location.pathname + window.location.search !== path) {
       window.history.replaceState(null, '', path);
     }
-  }, [focusedId, windows, mounted, fullscreenId]);
+  }, [focusedId, windows, mounted, fullscreenId, admin]);
 
   // Esc exits fullscreen.
   useEffect(() => {
@@ -98,6 +102,7 @@ export function Desktop({ initialPath }: { initialPath?: string[] }) {
       <WindowManager />
       <MenuBar />
       <Dock />
+      {mounted && admin ? <AdminLayer /> : null}
       {companionReady && !isMobile ? <Zeppelin /> : null}
 
       {/* rm -rf / → sticky kernel panic; shutdown → "safe to turn off". Both sit above the boot loader. */}
