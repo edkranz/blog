@@ -7,6 +7,7 @@ import { adminConfig } from './config';
 import { createFakeBackend } from './fake-backend';
 import { createGithubBackend } from './github-backend';
 import { isValidBranch } from './post-meta';
+import { MissingContentError } from './snapshot';
 import { SESSION_COOKIE, SESSION_TTL_S, type Session, seal, unseal } from './session';
 import { POSTS_DIR, PROFILE_FILE, PROJECTS_FILE } from './types';
 
@@ -85,6 +86,7 @@ export function adminRoute(handler: (ctx: Ctx) => Promise<Response>) {
     } catch (e) {
       if (e instanceof BranchMovedError || e instanceof MergeConflictError) return Response.json({ error: e.message }, { status: 409 });
       if (e instanceof InvalidChangeError || e instanceof BadRequestError) return Response.json({ error: e.message }, { status: 400 });
+      if (e instanceof MissingContentError) return Response.json({ error: e.message }, { status: 404 });
       if (e instanceof GitHubError && e.status === 401) return Response.json({ error: 'unauthorized' }, { status: 401 });
       console.error('[admin]', e);
       return Response.json({ error: e instanceof Error ? e.message : 'failed' }, { status: 502 });

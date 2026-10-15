@@ -31,6 +31,11 @@ export function isValidBranch(s: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9._-]*(?:\/[A-Za-z0-9][A-Za-z0-9._-]*)*$/.test(s) && !s.includes('..') && !s.endsWith('.lock');
 }
 
+/** The branches /admin can edit: main and drafts it created. Older branches predate content/profile.json. */
+export function editableBranches(names: string[]): string[] {
+  return [...(names.includes('main') ? ['main'] : []), ...names.filter((n) => n.startsWith('drafts/')).sort()];
+}
+
 export function draftBranchName(input: string): string {
   return `drafts/${slugify(input) || 'draft'}`;
 }

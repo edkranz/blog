@@ -1,7 +1,8 @@
 'use client';
 
+import { uniqueUploadPath, uploadName } from '@/lib/admin/pending';
 import { isValidSlug, slugify } from '@/lib/admin/post-meta';
-import { type AdminPostMeta, POSTS_DIR, type PostDraft } from '@/lib/admin/types';
+import { type AdminPostMeta, MAX_UPLOAD_BYTES, POSTS_DIR, type PostDraft } from '@/lib/admin/types';
 import { profile } from '@/lib/eddie';
 import { isEditing, useAdminStore } from '@/lib/os/admin/store';
 import { useWindowStore } from '@/lib/os/store';
@@ -17,17 +18,8 @@ const MarkdownEditor = dynamic(() => import('./markdown-editor'), {
   loading: () => <div className='py-10 text-center text-sm text-muted-foreground'>Loading…</div>,
 });
 
-const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif|svg)$/;
+const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif)$/;
 const NO_POSTS: AdminPostMeta[] = [];
-
-/** "My Photo (1).PNG" -> "my-photo-1.png": the shape `toFileChanges` accepts for uploads. */
-function uploadName(fileName: string): string {
-  return fileName
-    .toLowerCase()
-    .replace(/[^a-z0-9.]+/g, '-')
-    .replace(/-*\.+-*/g, '.')
-    .replace(/^[-.]+|[-.]+$/g, '');
-}
 
 const newDraft = (): PostDraft => ({ slug: '', title: '', date: new Date().toISOString(), excerpt: '', tags: [], heroImg: null, hideFromBlogList: false, body: '', extra: {} });
 
@@ -58,31 +50,41 @@ export function EditorApp({ win }: AppContentProps) {
   const [path, setPath] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
   const [missing, setMissing] = useState(false);
+  // The branch the draft was loaded from: keys the editor so a branch switch remounts it with that branch's body.
+  const [loadedBranch, setLoadedBranch] = useState<string | null>(null);
+  // The slug this editor last staged a new post under (not the draft's last slug, which may be invalid or taken).
+  const stagedSlug = useRef<string | null>(null);
   const previews = useRef(new Map<string, string>());
   const draftRef = useRef<PostDraft | null>(null);
   draftRef.current = draft;
 
+  // Loads the post, and reloads it from the new branch whenever the branch changes underneath the window.
+  const slugToLoad = isNew ? null : (draft?.slug ?? initialSlug);
   useEffect(() => {
     if (!editing) return;
-    if (isNew) {
-      setDraft(newDraft());
+    if (!slugToLoad) {
+      if (!draftRef.current) setDraft(newDraft());
+      setLoadedBranch(branch);
       return;
     }
     let cancelled = false;
+    setDraft(null);
     useAdminStore
       .getState()
-      .loadPost(initialSlug as string)
+      .loadPost(slugToLoad)
       .then((loaded) => {
         if (cancelled) return;
         if (!loaded) return setMissing(true);
         setDraft(loaded.draft);
         setOriginal(loaded.draft.body);
         setPath(loaded.path);
+        setLoadedBranch(branch);
       });
     return () => {
       cancelled = true;
     };
-  }, [editing, isNew, initialSlug]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing, branch]);
 
   // A new post stops being "fresh" once the file this editor staged has been saved: its slug is then fixed.
   // (Matching on `path` alone would let a colliding title adopt, and overwrite, someone else's post.)
@@ -100,9 +102,18 @@ export function EditorApp({ win }: AppContentProps) {
       setDraft(next);
       if (fresh) setPath(nextPath);
       updateProps(win.id, { slug: fresh ? null : next.slug }, next.title || 'Untitled');
+      const store = useAdminStore.getState();
       if (isValidSlug(next.slug) && !slugTaken(next.slug)) {
-        useAdminStore.getState().stagePost(next, nextPath, fresh, prev.slug || undefined);
-        if (fresh) setOwnPath(nextPath);
+        store.stagePost(next, nextPath, fresh, fresh ? (stagedSlug.current ?? undefined) : undefined);
+        if (fresh) {
+          stagedSlug.current = next.slug;
+          setOwnPath(nextPath);
+        }
+      } else if (fresh && stagedSlug.current) {
+        // The slug went invalid or collided: withdraw this editor's earlier draft rather than leave an orphan.
+        store.unstagePost(stagedSlug.current);
+        stagedSlug.current = null;
+        setOwnPath(null);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,8 +125,13 @@ export function EditorApp({ win }: AppContentProps) {
     const name = uploadName(file.name);
     if (!d || !isValidSlug(d.slug)) throw new Error('title required');
     if (!IMAGE_EXT.test(name)) throw new Error('unsupported image');
-    const src = `/uploads/posts/${d.slug}/${name}`;
-    useAdminStore.getState().stageUpload(`public${src}`, await fileToBase64(file));
+    if (file.size > MAX_UPLOAD_BYTES) throw new Error('image too large');
+    // Pasted images are all "image.png": never reuse a name already staged or used in this post.
+    const store = useAdminStore.getState();
+    const taken = [...Object.keys(store.pending).map((k) => k.replace(/^upload:/, '')), ...(d.body.match(/\/uploads\/posts\/[^\s)"']+/g) ?? []).map((src) => `public${src}`)];
+    const repoPath = uniqueUploadPath(d.slug, name, taken);
+    store.stageUpload(repoPath, await fileToBase64(file));
+    const src = repoPath.slice('public'.length);
     previews.current.set(src, URL.createObjectURL(file));
     return src;
   }, []);
@@ -129,6 +145,11 @@ export function EditorApp({ win }: AppContentProps) {
     },
     [branch]
   );
+
+  // Once a new post is saved its window answers to the slug, so opening the post from Blog focuses it.
+  useEffect(() => {
+    if (isNew && !fresh && draft?.slug) updateProps(win.id, { slug: draft.slug });
+  }, [isNew, fresh, draft?.slug, updateProps, win.id]);
 
   if (!editing) return null;
   if (missing) return <div className='grid h-full place-items-center text-sm text-muted-foreground'>No such post.</div>;
@@ -203,7 +224,7 @@ export function EditorApp({ win }: AppContentProps) {
         </div>
         <div className='mt-5 overflow-hidden rounded-xl border'>
           <MarkdownEditor
-            key={`${branch}:${initialSlug ?? 'new'}`}
+            key={`${loadedBranch}:${initialSlug ?? 'new'}`}
             markdown={draft.body}
             original={original}
             dark={resolvedTheme === 'dark'}

@@ -7,6 +7,9 @@ export type JsonFile = typeof PROFILE_FILE | typeof PROJECTS_FILE;
 export const JSON_FILES: readonly string[] = [PROFILE_FILE, PROJECTS_FILE];
 export const POSTS_DIR = 'content/posts';
 
+/** Vercel caps request bodies at 4.5 MB, so keep a single image comfortably under it. */
+export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
+
 export type PostDraft = {
   slug: string;
   title: string;

@@ -1,10 +1,8 @@
 import { serializePostFile } from './post-file.ts';
 import { isValidSlug } from './post-meta.ts';
-import { type FileChange, JSON_FILES, POSTS_DIR, PROJECTS_FILE, type PendingChange } from './types.ts';
+import { type FileChange, JSON_FILES, MAX_UPLOAD_BYTES, POSTS_DIR, PROJECTS_FILE, type PendingChange } from './types.ts';
 
-/** Vercel caps request bodies at 4.5 MB, so keep a single image comfortably under it. */
-export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
-const UPLOAD_RE = /^public\/uploads\/posts\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:[-_.][a-z0-9]+)*\.(?:png|jpe?g|gif|webp|avif|svg)$/;
+const UPLOAD_RE = /^public\/uploads\/posts\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:[-_.][a-z0-9]+)*\.(?:png|jpe?g|gif|webp|avif)$/; // no SVG: scripted SVG on our origin could drive the admin API
 
 export class InvalidChangeError extends Error {
   name = 'InvalidChangeError';

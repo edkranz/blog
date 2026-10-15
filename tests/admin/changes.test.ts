@@ -32,6 +32,7 @@ test('rejects hostile or malformed changes', () => {
     [{ kind: 'delete-post', slug: 'x', path: '.github/workflows/x.yml' }],
     [{ kind: 'upload', path: '../.github/workflows/x.yml', base64: png }],
     [{ kind: 'upload', path: 'public/uploads/posts/a/b.sh', base64: png }],
+    [{ kind: 'upload', path: 'public/uploads/posts/a/evil.svg', base64: png }],
     [{ kind: 'upload', path: 'public/uploads/posts/a/../../x.png', base64: png }],
     [{ kind: 'upload', path: 'public/uploads/posts/a/big.png', base64: 'A'.repeat(5_000_000) }],
     [{ kind: 'nope' } as never],

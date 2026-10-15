@@ -1,9 +1,9 @@
-import { draftBranchName, isValidBranch } from '@/lib/admin/post-meta';
+import { draftBranchName, editableBranches, isValidBranch } from '@/lib/admin/post-meta';
 import { BadRequestError, adminRoute } from '@/lib/admin/server';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = adminRoute(async ({ backend }) => Response.json({ branches: (await backend.listBranches()).sort((a, b) => (a === 'main' ? -1 : b === 'main' ? 1 : a.localeCompare(b))) }));
+export const GET = adminRoute(async ({ backend }) => Response.json({ branches: editableBranches(await backend.listBranches()) }));
 
 export const POST = adminRoute(async ({ req, backend }) => {
   const { name, from } = (await req.json()) as { name?: string; from?: string };
