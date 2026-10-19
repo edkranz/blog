@@ -38,3 +38,8 @@ export type FileChange = { path: string; content: string; encoding: 'utf-8' | 'b
 export type AdminSnapshot = { branch: string; head: string; profile: unknown; projects: unknown[]; posts: AdminPostMeta[] };
 
 export type AdminUser = { login: string; avatarUrl: string };
+
+/** A draft commit whose message carries this marker gets a Vercel preview build (see scripts/vercel-ignore.sh). */
+export const PREVIEW_MARKER = '[preview]';
+export const PREVIEW_MESSAGE = `Deploy preview ${PREVIEW_MARKER}`;
+export type PreviewState = { state: 'none' | 'building' | 'failed'; url: null } | { state: 'ready'; url: string };

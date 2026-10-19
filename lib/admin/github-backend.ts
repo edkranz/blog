@@ -1,5 +1,5 @@
 import { BranchMovedError, type ContentBackend, GitHubError, MergeConflictError } from './backend.ts';
-import type { FileChange } from './types.ts';
+import { type FileChange, PREVIEW_MARKER, type PreviewState } from './types.ts';
 
 const encPath = (p: string) => p.split('/').map(encodeURIComponent).join('/');
 
@@ -52,8 +52,8 @@ export function createGithubBackend(token: string, repo: string, fetchImpl: type
       const blob = await json<{ sha: string }>('/git/blobs', { method: 'POST', body: { content: c.content, encoding: c.encoding } });
       tree.push({ path: c.path, mode: '100644', type: 'blob', sha: blob.sha });
     }
-    const newTree = await json<{ sha: string }>('/git/trees', { method: 'POST', body: { base_tree: base.tree.sha, tree } });
-    const created = await json<{ sha: string }>('/git/commits', { method: 'POST', body: { message, tree: newTree.sha, parents: [expectedHead] } });
+    const treeSha = tree.length ? (await json<{ sha: string }>('/git/trees', { method: 'POST', body: { base_tree: base.tree.sha, tree } })).sha : base.tree.sha;
+    const created = await json<{ sha: string }>('/git/commits', { method: 'POST', body: { message, tree: treeSha, parents: [expectedHead] } });
     const res = await call(`/git/refs/heads/${encPath(branch)}`, { method: 'PATCH', body: { sha: created.sha, force: false } });
     if (res.status === 422) throw new BranchMovedError();
     if (!res.ok) throw new GitHubError(res.status, `update ${branch}: ${res.status}`);
@@ -71,14 +71,18 @@ export function createGithubBackend(token: string, repo: string, fetchImpl: type
     await call(`/git/refs/heads/${encPath(branch)}`, { method: 'DELETE' });
   };
 
-  const previewUrl = async (branch: string) => {
+  const preview = async (branch: string): Promise<PreviewState> => {
     const sha = await head(branch);
     const deployments = await json<{ id: number }[]>(`/deployments?sha=${sha}&per_page=5`);
     for (const d of deployments) {
       const [status] = await json<{ state: string; environment_url?: string }[]>(`/deployments/${d.id}/statuses?per_page=1`);
-      if (status?.state === 'success' && status.environment_url) return status.environment_url;
+      if (status?.state === 'success' && status.environment_url) return { state: 'ready', url: status.environment_url };
     }
-    return null;
+    // Vercel only records a deployment once the build succeeds; until then the commit's checks say how it is going.
+    const { message } = await json<{ message: string }>(`/git/commits/${sha}`);
+    if (!message.includes(PREVIEW_MARKER)) return { state: 'none', url: null };
+    const { state } = await json<{ state: string }>(`/commits/${sha}/status`);
+    return { state: state === 'failure' || state === 'error' ? 'failed' : 'building', url: null };
   };
 
   return {
@@ -91,6 +95,6 @@ export function createGithubBackend(token: string, repo: string, fetchImpl: type
     },
     commit,
     publish,
-    previewUrl,
+    preview,
   };
 }

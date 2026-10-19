@@ -10,7 +10,11 @@ function fakeFetch(routes: Route[]) {
   const calls: Call[] = [];
   const impl = (async (input: string | URL, init?: RequestInit) => {
     const url = new URL(String(input));
-    const call: Call = { method: init?.method ?? 'GET', path: url.pathname.replace('/repos/edkranz/blog', '') + url.search, body: init?.body ? JSON.parse(String(init.body)) : undefined };
+    const call: Call = {
+      method: init?.method ?? 'GET',
+      path: url.pathname.replace('/repos/edkranz/blog', '') + url.search,
+      body: init?.body ? JSON.parse(String(init.body)) : undefined,
+    };
     calls.push(call);
     for (const r of routes) {
       const res = r(call);
@@ -73,7 +77,10 @@ test('a 422 on the ref update (race) is BranchMovedError', async () => {
     on('POST', '/git/commits', () => json({ sha: 'c2' })),
     on('PATCH', '/git/refs/heads/drafts/x', () => json({ message: 'Update is not a fast forward' }, 422)),
   ]);
-  await assert.rejects(createGithubBackend('tok', 'edkranz/blog', impl).commit('drafts/x', 'h1', 'm', [{ path: 'a', content: 'b', encoding: 'utf-8' }]), BranchMovedError);
+  await assert.rejects(
+    createGithubBackend('tok', 'edkranz/blog', impl).commit('drafts/x', 'h1', 'm', [{ path: 'a', content: 'b', encoding: 'utf-8' }]),
+    BranchMovedError
+  );
 });
 
 test('readFile returns null on 404 and raw text otherwise', async () => {
@@ -103,12 +110,41 @@ test('publish maps a 405 merge refusal to MergeConflictError and keeps the branc
   assert.ok(!calls.some((c) => c.method === 'DELETE'));
 });
 
-test('previewUrl returns the first successful deployment for the branch head', async () => {
-  const { impl } = fakeFetch([
+test('commit with no changes reuses the parent tree (a preview marker commit)', async () => {
+  const { impl, calls } = fakeFetch([
     headRoute('h1'),
+    on('GET', '/git/commits/h1', () => json({ tree: { sha: 't1' } })),
+    on('POST', '/git/commits', () => json({ sha: 'c2' })),
+    on('PATCH', '/git/refs/heads/drafts/x', () => json({})),
+  ]);
+  assert.deepEqual(await createGithubBackend('tok', 'edkranz/blog', impl).commit('drafts/x', 'h1', 'Deploy preview [preview]', []), { sha: 'c2' });
+  assert.ok(!calls.some((c) => c.path === '/git/trees'));
+  assert.deepEqual(calls.find((c) => c.path === '/git/commits' && c.method === 'POST')?.body, {
+    message: 'Deploy preview [preview]',
+    tree: 't1',
+    parents: ['h1'],
+  });
+});
+
+const previewOf = (routes: Route[]) => createGithubBackend('tok', 'edkranz/blog', fakeFetch([headRoute('h1'), ...routes]).impl).preview('drafts/x');
+const noDeployments = on('GET', '/deployments?sha=h1&per_page=5', () => json([]));
+const message = (m: string) => on('GET', '/git/commits/h1', () => json({ message: m }));
+const combined = (state: string) => on('GET', '/commits/h1/status', () => json({ state }));
+
+test('preview is ready with the first successful deployment url for the branch head', async () => {
+  const state = await previewOf([
     on('GET', '/deployments?sha=h1&per_page=5', () => json([{ id: 1 }, { id: 2 }])),
     on('GET', '/deployments/1/statuses?per_page=1', () => json([{ state: 'pending' }])),
     on('GET', '/deployments/2/statuses?per_page=1', () => json([{ state: 'success', environment_url: 'https://p.vercel.app' }])),
   ]);
-  assert.equal(await createGithubBackend('tok', 'edkranz/blog', impl).previewUrl('drafts/x'), 'https://p.vercel.app');
+  assert.deepEqual(state, { state: 'ready', url: 'https://p.vercel.app' });
+});
+
+test('preview is none when the head was saved without asking for a preview', async () => {
+  assert.deepEqual(await previewOf([noDeployments, message('Edit profile'), combined('pending')]), { state: 'none', url: null });
+});
+
+test('preview is building for a requested head until its checks finish, then failed if they fail', async () => {
+  assert.deepEqual(await previewOf([noDeployments, message('Deploy preview [preview]'), combined('pending')]), { state: 'building', url: null });
+  assert.deepEqual(await previewOf([noDeployments, message('Deploy preview [preview]'), combined('failure')]), { state: 'failed', url: null });
 });

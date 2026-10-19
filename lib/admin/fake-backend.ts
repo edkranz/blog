@@ -1,7 +1,7 @@
 import { BranchMovedError, type ContentBackend } from './backend.ts';
-import type { FileChange } from './types.ts';
+import { type FileChange, PREVIEW_MARKER } from './types.ts';
 
-type Branch = { head: string; files: Map<string, string>; touched: Set<string> };
+type Branch = { head: string; files: Map<string, string>; touched: Set<string>; previewed?: boolean };
 
 let counter = 0;
 const nextSha = () => `fake${(++counter).toString(16).padStart(8, '0')}`;
@@ -33,7 +33,7 @@ export function createFakeBackend(seed: Record<string, string>): ContentBackend 
       const src = get(from);
       branches.set(name, { head: src.head, files: new Map(src.files), touched: new Set() });
     },
-    async commit(name, expectedHead, _message, changes: FileChange[]) {
+    async commit(name, expectedHead, message, changes: FileChange[]) {
       const b = get(name);
       if (b.head !== expectedHead) throw new BranchMovedError();
       for (const c of changes) {
@@ -42,6 +42,7 @@ export function createFakeBackend(seed: Record<string, string>): ContentBackend 
         b.touched.add(c.path);
       }
       b.head = nextSha();
+      b.previewed = message.includes(PREVIEW_MARKER);
       return { sha: b.head };
     },
     async publish(name) {
@@ -56,9 +57,11 @@ export function createFakeBackend(seed: Record<string, string>): ContentBackend 
       main.head = nextSha();
       branches.delete(name);
     },
-    async previewUrl(name) {
-      get(name);
-      return name === 'main' ? null : `https://blog-git-${name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-edkranz.vercel.app`;
+    async preview(name) {
+      // Builds are instant here: a requested preview is ready at once.
+      return get(name).previewed
+        ? { state: 'ready', url: `https://blog-git-${name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-edkranz.vercel.app` }
+        : { state: 'none', url: null };
     },
     files(name) {
       return Object.fromEntries(get(name).files);

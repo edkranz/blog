@@ -1,4 +1,4 @@
-import type { FileChange } from './types.ts';
+import type { FileChange, PreviewState } from './types.ts';
 
 /** Everything the admin needs from git. Implemented by GitHub (prod) and an in-memory fake (local E2E). */
 export interface ContentBackend {
@@ -9,11 +9,12 @@ export interface ContentBackend {
   /** File names (not paths) directly inside `dir`. */
   listDir(branch: string, dir: string): Promise<string[]>;
   createBranch(name: string, from: string): Promise<void>;
-  /** One commit with every change; throws BranchMovedError unless the branch is still at `expectedHead`. */
+  /** One commit with every change (none: an empty commit); throws BranchMovedError unless the branch is still at `expectedHead`. */
   commit(branch: string, expectedHead: string, message: string, changes: FileChange[]): Promise<{ sha: string }>;
   /** Squash-merge `branch` into main via a PR, then delete the branch. */
   publish(branch: string, title: string): Promise<void>;
-  previewUrl(branch: string): Promise<string | null>;
+  /** The preview deployment of the branch head: built on request only (a PREVIEW_MARKER commit). */
+  preview(branch: string): Promise<PreviewState>;
 }
 
 export class BranchMovedError extends Error {

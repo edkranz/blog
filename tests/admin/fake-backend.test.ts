@@ -32,7 +32,9 @@ test('branch, commit, publish', async () => {
   await assert.rejects(be.createBranch('drafts/x', 'main'));
   await be.commit('drafts/x', await be.head('drafts/x'), 'm', [{ path: 'content/posts/a.mdx', content: 'Draft', encoding: 'utf-8' }]);
   assert.equal(await be.readFile('main', 'content/posts/a.mdx'), 'A');
-  assert.match((await be.previewUrl('drafts/x')) ?? '', /^https:\/\//);
+  assert.deepEqual(await be.preview('drafts/x'), { state: 'none', url: null });
+  await be.commit('drafts/x', await be.head('drafts/x'), 'Deploy preview [preview]', []);
+  assert.match((await be.preview('drafts/x')).url ?? '', /^https:\/\//);
   await be.publish('drafts/x', 'Publish');
   assert.equal(await be.readFile('main', 'content/posts/a.mdx'), 'Draft');
   assert.deepEqual(await be.listBranches(), ['main']);
