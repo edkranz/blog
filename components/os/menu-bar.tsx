@@ -1,5 +1,6 @@
 'use client';
 
+import { useAdminStore } from '@/lib/os/admin/store';
 import { getAppMeta } from '@/lib/os/apps-meta';
 import { MENUBAR_H } from '@/lib/os/constants';
 import { useMounted } from '@/lib/os/hooks';
@@ -7,9 +8,15 @@ import { usePower } from '@/lib/os/power';
 import { useWindowStore } from '@/lib/os/store';
 import { BatteryMedium, Moon, Sun, Volume2, Wifi } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { AppIcon } from './icons';
 import { Dropdown, type MenuEntry } from './menu';
+
+// /admin only, so visitors never download them.
+const BranchMenu = dynamic(() => import('./admin/admin-menus').then((m) => m.BranchMenu), { ssr: false });
+const AccountMenu = dynamic(() => import('./admin/admin-menus').then((m) => m.AccountMenu), { ssr: false });
+const AdminToolbar = dynamic(() => import('./admin/admin-toolbar').then((m) => m.AdminToolbar), { ssr: false });
 
 function Clock() {
   const mounted = useMounted();
@@ -63,6 +70,7 @@ export function MenuBar() {
   const { theme, setTheme } = useTheme();
   const mounted = useMounted();
   const [openId, setOpenId] = useState<string | null>(null);
+  const adminEnabled = useAdminStore((s) => s.enabled);
 
   const active = windows.find((w) => w.id === focusedId);
   // With nothing focused the desktop belongs to Files, this OS's Finder.
@@ -147,14 +155,18 @@ export function MenuBar() {
           <Dropdown id='edit' title='Edit' entries={edit} {...menu} />
           <Dropdown id='view' title='View' entries={view} {...menu} />
           <Dropdown id='window' title='Window' entries={win} {...menu} />
+          {adminEnabled ? <BranchMenu {...menu} /> : null}
         </nav>
       </div>
       <div className='flex items-center gap-2.5'>
         <Wifi size={14} className='hidden text-foreground/70 sm:block' />
         <Volume2 size={14} className='hidden text-foreground/70 sm:block' />
         <BatteryMedium size={16} className='hidden text-foreground/70 sm:block' />
+        {adminEnabled ? <AdminToolbar /> : null}
+        {adminEnabled ? <AccountMenu {...menu} /> : null}
         <ThemeToggle />
-        <span className='pl-1 font-medium'>
+        {/* On a phone the admin toolbar needs the room. */}
+        <span className={`whitespace-nowrap pl-1 font-medium ${adminEnabled ? 'hidden sm:inline' : ''}`}>
           <Clock />
         </span>
       </div>

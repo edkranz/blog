@@ -9,9 +9,12 @@ import { notFound } from 'next/navigation';
 
 type Params = { params: Promise<{ segments: string[] }> };
 
+// Apps with no route of their own: Welcome is the home page, the Editor only exists in /admin.
+const HIDDEN_APPS = new Set(['welcome', 'editor']);
+
 // Prerender a page for every app route (/about, /blog, …) and every post (/blog/<slug>).
 export function generateStaticParams() {
-  const apps = (Object.keys(APP_META) as AppId[]).filter((id) => id !== 'welcome').map((id) => ({ segments: [id] }));
+  const apps = (Object.keys(APP_META) as AppId[]).filter((id) => !HIDDEN_APPS.has(id)).map((id) => ({ segments: [id] }));
   const posts = getPublishedPosts().map((p) => ({ segments: ['blog', p.slug] }));
   return [...apps, ...posts];
 }
@@ -20,7 +23,7 @@ export function generateStaticParams() {
 function isKnownRoute(segments: string[]): boolean {
   const [first, second] = segments;
   if (first === 'blog') return !second || !!getPostBySlug(second);
-  return first !== 'welcome' && first in APP_META && !second;
+  return !HIDDEN_APPS.has(first) && first in APP_META && !second;
 }
 
 const ROUTE_DESC: Record<string, string> = {

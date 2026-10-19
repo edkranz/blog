@@ -1,13 +1,18 @@
 'use client';
 
-import { profile } from '@/lib/eddie';
+import { PROFILE_FILE } from '@/lib/admin/types';
+import { useContent } from '@/lib/os/content';
 import { useWindowStore } from '@/lib/os/store';
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
+import { Editable } from '../editable';
 import { AppScroll, Chunky, SocialRow, Squircle } from '../ui';
 
 export function WelcomeApp() {
   const openApp = useWindowStore((s) => s.openApp);
+  const {
+    site: { profile },
+  } = useContent();
   const [spin, setSpin] = useState(0);
 
   return (
@@ -29,16 +34,16 @@ export function WelcomeApp() {
         </button>
 
         <h1 className='text-[28px] font-bold leading-tight tracking-tight'>
-          {profile.intro} <span className='os-wave'>👋</span>
+          <Editable file={PROFILE_FILE} path='profile.intro' value={profile.intro} /> <span className='os-wave'>👋</span>
         </h1>
         <p className='mt-1 text-[15px] font-semibold text-muted-foreground'>
-          {profile.role} at{' '}
+          <Editable file={PROFILE_FILE} path='profile.role' value={profile.role} /> at{' '}
           <a href={profile.company.url} target='_blank' rel='noopener noreferrer' className='text-primary underline-offset-2 hover:underline'>
-            {profile.company.name}
+            <Editable file={PROFILE_FILE} path='profile.company.name' value={profile.company.name} />
           </a>
         </p>
 
-        <p className='mt-3 text-[15px] leading-relaxed text-foreground/85'>{profile.blurb}</p>
+        <Editable file={PROFILE_FILE} path='profile.blurb' value={profile.blurb} as='p' multiline className='mt-3 text-[15px] leading-relaxed text-foreground/85' />
 
         <div className='mt-5 flex flex-wrap gap-2.5'>
           <Chunky variant='primary' onClick={() => openApp('about')}>

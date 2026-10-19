@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
+import { readingMinutes, tagLabel } from './admin/post-meta';
 
 export type Post = {
   slug: string;
@@ -15,18 +16,6 @@ export type Post = {
 };
 
 const POSTS_DIR = path.join(process.cwd(), 'content', 'posts');
-
-function tagLabel(raw: unknown): string {
-  // Tina stored tags as { tag: 'content/tags/ai.mdx' }; normalise to "ai".
-  const value = typeof raw === 'string' ? raw : ((raw as { tag?: string })?.tag ?? '');
-  const base = value.split('/').pop() ?? value;
-  return base.replace(/\.mdx?$/, '');
-}
-
-function readingMinutes(body: string): number {
-  const words = body.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 200));
-}
 
 function parseFile(fileName: string): Post {
   const full = path.join(POSTS_DIR, fileName);

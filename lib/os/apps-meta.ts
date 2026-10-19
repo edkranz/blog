@@ -144,6 +144,17 @@ export const APP_META: Record<AppId, AppMeta> = {
     dock: true,
     desktop: true,
   },
+  editor: {
+    id: 'editor',
+    name: 'Editor',
+    iconId: 'book',
+    accent: 'var(--brand-purple)',
+    defaultSize: { w: 920, h: 720 },
+    minSize: { w: 520, h: 420 },
+    single: false,
+    dock: false,
+    desktop: false,
+  },
 };
 
 export function getAppMeta(id: AppId): AppMeta {
