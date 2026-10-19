@@ -56,7 +56,7 @@ with sync_playwright() as p:
     page.wait_for_url(f"{BASE}/admin")
     header = page.locator("header")
 
-    # In-place edit on main.
+    # In-place edit on main: Save moves it to a new draft branch, main stays untouched.
     blurb = page.locator('[data-editable="profile.blurb"]')
     expect(blurb).to_be_visible(timeout=60_000)
     blurb.click()
@@ -64,8 +64,15 @@ with sync_playwright() as p:
     page.keyboard.type("Edited by e2e.")
     blurb.evaluate("e => e.blur()")
     expect(page.get_by_text(ONE_CHANGE)).to_be_visible()
-    save(page)
-    assert api(page, "content?branch=main")["profile"]["profile"]["blurb"] == "Edited by e2e."
+    page.get_by_role("button", name="Save", exact=True).click()
+    name = page.get_by_role("dialog", name="New Branch").get_by_role("textbox")
+    expect(name).to_have_value(re.compile(r"^edit \d{4}-\d{2}-\d{2}$"))
+    name.fill("E2E Test")
+    page.get_by_role("button", name="Create").click()
+    expect(header.get_by_role("button", name="drafts/e2e-test")).to_be_visible()
+    expect(page.get_by_text(ANY_CHANGES)).to_have_count(0, timeout=15_000)
+    assert api(page, "content?branch=drafts/e2e-test")["profile"]["profile"]["blurb"] == "Edited by e2e."
+    assert api(page, "content?branch=main")["profile"]["profile"]["blurb"] != "Edited by e2e."
 
     # Stale head and hostile paths are rejected server-side.
     head = api(page, "content?branch=main")["head"]
@@ -73,13 +80,6 @@ with sync_playwright() as p:
     hostile = post(page, "commit", {"branch": "main", "head": head, "message": "", "changes": [{"kind": "upload", "path": "../.github/workflows/x.yml", "base64": "AA=="}]})
     assert hostile.status == 400, hostile.status
     assert page.request.post(f"{BASE}/api/admin/commit", data={}).status == 403  # no Origin header
-
-    # Draft branch.
-    header.get_by_role("button", name="main").click()
-    page.get_by_text("New Branch…").click()
-    page.get_by_role("dialog").get_by_role("textbox").fill("E2E Test")
-    page.get_by_role("button", name="Create").click()
-    expect(header.get_by_role("button", name="drafts/e2e-test")).to_be_visible()
 
     # Edit the real post in the rich editor.
     page.get_by_role("button", name="Open Blog").click()
@@ -121,10 +121,18 @@ with sync_playwright() as p:
     raw = api(page, "post?branch=drafts/e2e-test&slug=e2e-raw")["draft"]["body"]
     assert '<Foo bar="1" />' in raw and "plain text" in raw, raw
 
-    # Publish the branch.
-    page.get_by_role("button", name="Publish to main").click()
-    page.get_by_role("dialog").get_by_role("button", name="Publish").click()
-    expect(header.get_by_role("button", name="main")).to_be_visible(timeout=15_000)
+    # Saves do not build; Deploy preview asks for a build of the draft head.
+    deploy = header.get_by_role("button", name="Deploy preview")
+    expect(deploy).to_be_visible(timeout=15_000)
+    deploy.click()
+    preview = header.get_by_role("link", name="Preview")
+    expect(preview).to_be_visible(timeout=15_000)
+    assert "blog-git-drafts-e2e-test" in (preview.get_attribute("href") or "")
+
+    # Push the branch to main.
+    header.get_by_role("button", name="Push to main").click()
+    page.get_by_role("dialog").get_by_role("button", name="Push", exact=True).click()
+    expect(header.get_by_role("button", name="main", exact=True)).to_be_visible(timeout=15_000)
     assert "E2E line." in api(page, f"post?branch=main&slug={SLUG}")["draft"]["body"]
     assert "drafts/e2e-test" not in api(page, "branches")["branches"]
 
@@ -143,7 +151,7 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/admin")
     expect(page.get_by_text("Load failed: main has no content/profile.json")).to_be_visible(timeout=60_000)
     expect(page.get_by_role("link", name="Sign in with GitHub")).to_have_count(0)
-    page.locator("header").get_by_role("button", name="main").click()
+    page.locator("header").get_by_role("button", name="main", exact=True).click()
     page.get_by_text("drafts/has-content").click()
     expect(page.locator('[data-editable="profile.blurb"]')).to_be_visible(timeout=15_000)
 

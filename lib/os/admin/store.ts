@@ -1,13 +1,14 @@
 'use client';
 
 import { appendAt, removeAt, setPath } from '@/lib/admin/json-path';
-import { pruneUploads, rebaseJson, settlePending } from '@/lib/admin/pending';
 import { type Remote, overlay, pendingKey } from '@/lib/admin/overlay';
+import { pruneUploads, rebaseJson, settlePending } from '@/lib/admin/pending';
+import { draftBranchName } from '@/lib/admin/post-meta';
 import { type AdminPostMeta, type AdminSnapshot, type AdminUser, type JsonFile, PROFILE_FILE, type PendingChange, type PostDraft } from '@/lib/admin/types';
 import { create } from 'zustand';
-import { confirmAction } from './dialog-store';
+import { confirmAction, promptText } from './dialog-store';
 
-type Busy = null | 'loading' | 'saving' | 'publishing';
+type Busy = null | 'loading' | 'saving' | 'deploying' | 'publishing';
 type LoadedPost = { draft: PostDraft; path: string };
 
 export type AdminState = {
@@ -34,7 +35,10 @@ export type AdminState = {
   deletePost: (meta: AdminPostMeta) => void;
   stageUpload: (path: string, base64: string) => void;
   discard: () => void;
-  save: (message: string) => Promise<boolean>;
+  /** Commit pending edits to the current draft; on main, first moves them to a new draft branch. */
+  save: (message?: string) => Promise<boolean>;
+  /** Ask Vercel to build the draft head (see PREVIEW_MARKER). */
+  deployPreview: () => Promise<void>;
   createBranch: (name: string) => Promise<void>;
   publish: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -119,9 +123,16 @@ export const useAdminStore = create<AdminState>((set, get) => {
             return l;
           }),
         ]);
-        // Reloading the same branch (e.g. after "branch moved") keeps pending edits: rebase them onto what is there now.
-        const pending = branch === before.branch && before.remote ? await rebasePending(before, snap) : get().pending;
-        set({ branch: snap.branch, head: snap.head, remote: { profile: snap.profile, projects: snap.projects, posts: snap.posts }, branches: list.branches, drafts: {}, pending });
+        // Pending edits survive a reload (e.g. after "branch moved") or a new branch: rebase them onto what is there now.
+        const pending = before.remote ? await rebasePending(before, snap) : get().pending;
+        set({
+          branch: snap.branch,
+          head: snap.head,
+          remote: { profile: snap.profile, projects: snap.projects, posts: snap.posts },
+          branches: list.branches,
+          drafts: {},
+          pending,
+        });
         try {
           sessionStorage.setItem(BRANCH_KEY, snap.branch);
         } catch {}
@@ -184,7 +195,14 @@ export const useAdminStore = create<AdminState>((set, get) => {
 
     discard: () => set({ pending: {}, error: null }),
 
-    save: async (msg) => {
+    save: async (msg = '') => {
+      if (get().branch === 'main') {
+        if (Object.keys(get().pending).length === 0) return false;
+        const name = await promptText('New Branch', 'Create', freshDraftName(get().branches));
+        if (!name) return false;
+        await get().createBranch(name);
+        if (get().branch === 'main') return false; // not created; createBranch set the error
+      }
       const s = get();
       const sent = pruneUploads(s.pending);
       const changes = Object.values(sent);
@@ -218,6 +236,20 @@ export const useAdminStore = create<AdminState>((set, get) => {
       }
     },
 
+    deployPreview: async () => {
+      const { branch, head } = get();
+      if (branch === 'main' || !head) return;
+      set({ busy: 'deploying', error: null });
+      try {
+        const res = await api<{ head: string }>('preview', { branch, head });
+        set({ head: res.head });
+      } catch (e) {
+        set({ error: `Preview failed: ${message(e)}` });
+      } finally {
+        set({ busy: null });
+      }
+    },
+
     publish: async () => {
       const { branch } = get();
       set({ busy: 'publishing', error: null });
@@ -237,6 +269,15 @@ export const useAdminStore = create<AdminState>((set, get) => {
     },
   };
 });
+
+/** `edit 2026-10-19`, or `edit 2026-10-19 2`… when that draft already exists. */
+function freshDraftName(branches: string[]): string {
+  const base = `edit ${new Date().toISOString().slice(0, 10)}`;
+  for (let n = 1; ; n++) {
+    const name = n === 1 ? base : `${base} ${n}`;
+    if (!branches.includes(draftBranchName(name))) return name;
+  }
+}
 
 /**
  * Pending edits were made against `before.remote`; the branch is now at `snap`. JSON edits are replayed leaf by leaf.
@@ -265,4 +306,3 @@ async function rebasePending(before: AdminState, snap: AdminSnapshot): Promise<R
   }
   return out;
 }
-

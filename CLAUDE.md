@@ -138,8 +138,10 @@ Never ship the registered `DOOM.WAD`.
 The GitHub token is AES-GCM sealed into the httpOnly `eos_admin` cookie (`lib/admin/session.ts`). Editable copy
 lives in `content/profile.json` + `content/projects.json`; components read it through `useContent()` and wrap
 strings in `<Editable file path value>`. Posts are edited in the `editor` app (MDXEditor, lazy-loaded). Pending
-edits sit in `lib/os/admin/store.ts` until Save, which commits every change as one commit through the Git Data API
-(`lib/admin/github-backend.ts`), refusing if the branch moved. Draft branches are `drafts/<name>`; Publish
+edits sit in `lib/os/admin/store.ts` until Save (menu-bar toolbar, `admin-toolbar.tsx`), which commits every change as
+one commit through the Git Data API (`lib/admin/github-backend.ts`), refusing if the branch moved. Save never commits
+to `main`: there it moves the edits to a new `drafts/<name>` branch. Draft saves do not build on Vercel
+(`vercel.json` → `scripts/vercel-ignore.sh`); Deploy preview adds an empty `[preview]` commit that does. Push to main
 squash-merges a PR into `main`. Env: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `ADMIN_SESSION_SECRET`.
 Local E2E: `ADMIN_FAKE_GITHUB=1` swaps GitHub for an in-memory fake (ignored in production);
 `node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test "tests/**/*.test.ts"` runs the unit tests (what `pnpm test` runs),

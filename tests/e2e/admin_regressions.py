@@ -34,12 +34,21 @@ def sign_in(browser):
     page = browser.new_page(viewport={"width": 1400, "height": 900})
     page.goto(f"{BASE}/api/admin/login")
     page.wait_for_url(f"{BASE}/admin")
-    expect(page.locator("header").get_by_role("button", name="main")).to_be_visible(timeout=60_000)
+    expect(page.locator("header").get_by_role("button", name="main", exact=True)).to_be_visible(timeout=60_000)
     return page
 
 
 def save(page):
     page.get_by_role("button", name="Save", exact=True).click()
+    expect(page.get_by_text(ANY_CHANGES)).to_have_count(0, timeout=15_000)
+
+
+def save_as_draft(page, name):
+    """Save on main: the edits move to a new draft branch named in the prompt."""
+    page.get_by_role("button", name="Save", exact=True).click()
+    prompt = page.get_by_role("dialog", name="New Branch")
+    prompt.get_by_role("textbox").fill(name)
+    prompt.get_by_role("button", name="Create").click()
     expect(page.get_by_text(ANY_CHANGES)).to_have_count(0, timeout=15_000)
 
 
@@ -90,31 +99,54 @@ def check_branch_switch_reloads_editor(browser):
     save(page)
     header.get_by_role("button", name="drafts/switch-test").click()
     page.get_by_role("menuitem", name="main").or_(page.get_by_text("main", exact=True)).first.click()
-    expect(header.get_by_role("button", name="main")).to_be_visible()
+    expect(header.get_by_role("button", name="main", exact=True)).to_be_visible()
     page.wait_for_timeout(1500)
     body = page.locator(RICH_BODY).first
     assert "DRAFT-ONLY" not in body.inner_text(), "editor still shows the draft branch's body on main"
     page.close()
 
 
-def check_reload_rebases_json(browser):
-    """After 'branch moved', Reload keeps my edit and the upstream edit to the same file."""
-    page = sign_in(browser)
+def edit_blurb(page, text):
     blurb = page.locator('[data-editable="profile.blurb"]')
     expect(blurb).to_be_visible(timeout=60_000)
     blurb.click()
     page.keyboard.press("ControlOrMeta+A")
-    page.keyboard.type("Mine.")
+    page.keyboard.type(text)
     blurb.evaluate("e => e.blur()")
-    profile = api(page, "content?branch=main")["profile"]
-    profile["profile"]["location"] = "Upstream City"
-    commit(page, "main", [{"kind": "json", "file": "content/profile.json", "value": profile}])
+
+
+def move_upstream(page, branch, location):
+    profile = api(page, f"content?branch={branch}")["profile"]
+    profile["profile"]["location"] = location
+    commit(page, branch, [{"kind": "json", "file": "content/profile.json", "value": profile}])
+
+
+def check_reload_rebases_json(browser):
+    """After 'branch moved', Reload keeps my edit and the upstream edit to the same file."""
+    page = sign_in(browser)
+    assert page.request.post(f"{BASE}/api/admin/branches", data={"name": "Rebase Test", "from": "main"}, headers={"Origin": BASE}).ok
+    page.evaluate("sessionStorage.setItem('eos-admin-branch', 'drafts/rebase-test')")
+    page.reload()
+    expect(page.locator("header").get_by_role("button", name="drafts/rebase-test")).to_be_visible(timeout=60_000)
+    edit_blurb(page, "Mine.")
+    move_upstream(page, "drafts/rebase-test", "Upstream City")
     page.get_by_role("button", name="Save", exact=True).click()
     page.get_by_role("button", name="Reload").click()
     page.wait_for_timeout(1000)
     save(page)
-    after = api(page, "content?branch=main")["profile"]["profile"]
+    after = api(page, "content?branch=drafts/rebase-test")["profile"]["profile"]
     assert after["blurb"] == "Mine." and after["location"] == "Upstream City", after
+    page.close()
+
+
+def check_save_on_main_rebases_json(browser):
+    """Edits moved from main to a new draft are rebased onto main as it is now, not saved over an upstream change."""
+    page = sign_in(browser)
+    edit_blurb(page, "Carried.")
+    move_upstream(page, "main", "Moved City")
+    save_as_draft(page, "Carry Test")
+    after = api(page, "content?branch=drafts/carry-test")["profile"]["profile"]
+    assert after["blurb"] == "Carried." and after["location"] == "Moved City", after
     page.close()
 
 
@@ -124,7 +156,7 @@ def check_saved_new_post_single_window(browser):
     page.get_by_role("button", name="Open Blog").click()
     page.get_by_role("button", name="New post").click()
     page.get_by_role("textbox", name="Title").last.fill("One Window")
-    save(page)
+    save_as_draft(page, "One Window")
     before = page.locator(RICH_BODY).count()
     open_post(page, "One Window")
     page.wait_for_timeout(1000)
@@ -132,7 +164,13 @@ def check_saved_new_post_single_window(browser):
     page.close()
 
 
-CHECKS = [check_typed_colliding_title, check_branch_switch_reloads_editor, check_reload_rebases_json, check_saved_new_post_single_window]
+CHECKS = [
+    check_typed_colliding_title,
+    check_branch_switch_reloads_editor,
+    check_reload_rebases_json,
+    check_save_on_main_rebases_json,
+    check_saved_new_post_single_window,
+]
 
 with sync_playwright() as p:
     browser = p.chromium.launch()

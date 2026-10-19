@@ -16,6 +16,7 @@ import { Dropdown, type MenuEntry } from './menu';
 // /admin only, so visitors never download them.
 const BranchMenu = dynamic(() => import('./admin/admin-menus').then((m) => m.BranchMenu), { ssr: false });
 const AccountMenu = dynamic(() => import('./admin/admin-menus').then((m) => m.AccountMenu), { ssr: false });
+const AdminToolbar = dynamic(() => import('./admin/admin-toolbar').then((m) => m.AdminToolbar), { ssr: false });
 
 function Clock() {
   const mounted = useMounted();
@@ -161,9 +162,11 @@ export function MenuBar() {
         <Wifi size={14} className='hidden text-foreground/70 sm:block' />
         <Volume2 size={14} className='hidden text-foreground/70 sm:block' />
         <BatteryMedium size={16} className='hidden text-foreground/70 sm:block' />
+        {adminEnabled ? <AdminToolbar /> : null}
         {adminEnabled ? <AccountMenu {...menu} /> : null}
         <ThemeToggle />
-        <span className='pl-1 font-medium'>
+        {/* On a phone the admin toolbar needs the room. */}
+        <span className={`whitespace-nowrap pl-1 font-medium ${adminEnabled ? 'hidden sm:inline' : ''}`}>
           <Clock />
         </span>
       </div>

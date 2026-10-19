@@ -11,6 +11,7 @@ export function BranchMenu(menu: MenuProps) {
   const branch = useAdminStore((s) => s.branch);
   const branches = useAdminStore((s) => s.branches);
   const session = useAdminStore((s) => s.session);
+  const dirty = useAdminStore((s) => Object.keys(s.pending).length > 0);
   if (!session) return null;
 
   const switchTo = async (b: string) => {
@@ -33,6 +34,13 @@ export function BranchMenu(menu: MenuProps) {
         if (name) await useAdminStore.getState().createBranch(name);
       },
     },
+    {
+      label: 'Discard Changes',
+      disabled: !dirty,
+      onSelect: async () => {
+        if (await confirmAction('Discard unsaved changes?', 'Discard')) useAdminStore.getState().discard();
+      },
+    },
   ];
 
   return (
@@ -52,7 +60,11 @@ export function BranchMenu(menu: MenuProps) {
 export function AccountMenu(menu: MenuProps) {
   const session = useAdminStore((s) => s.session);
   if (!session) return null;
-  const entries: MenuEntry[] = [{ label: session.login, disabled: true }, 'sep', { label: 'Sign Out', onSelect: () => void useAdminStore.getState().signOut() }];
+  const entries: MenuEntry[] = [
+    { label: session.login, disabled: true },
+    'sep',
+    { label: 'Sign Out', onSelect: () => void useAdminStore.getState().signOut() },
+  ];
   return (
     <Dropdown
       id='account'
