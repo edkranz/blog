@@ -25,3 +25,11 @@ test('editable content has no em dashes', () => {
     assert.deepEqual(bad, [], file);
   }
 });
+
+test('every project sits in a known section and has unique links', () => {
+  for (const p of read('content/projects.json')) {
+    assert.ok(['work', 'projects', 'uni'].includes(p.section), `${p.id}: ${p.section}`);
+    const hrefs = (p.links ?? []).map((l: { href?: string; slug?: string }) => l.href ?? l.slug);
+    assert.equal(new Set(hrefs).size, hrefs.length, p.id);
+  }
+});

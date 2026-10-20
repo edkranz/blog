@@ -1,4 +1,4 @@
-import { education, hobbies, profile, projects, skills, socials, technologies } from '@/lib/eddie';
+import { PROJECT_SECTIONS, education, hobbies, profile, projectLinkHref, projects, skills, socials, technologies } from '@/lib/eddie';
 import type { Post } from '@/lib/posts';
 import { format } from 'date-fns';
 import type { ReactNode } from 'react';
@@ -138,28 +138,39 @@ export function StaticSite({ segments, posts }: { segments?: string[]; posts: Po
     return (
       <Shell>
         <h1 className='text-2xl font-bold'>Projects</h1>
-        <div className='mt-5 space-y-8'>
-          {projects.map((p) => (
-            <section key={p.id}>
-              <h2 className='text-lg font-semibold'>{p.title}</h2>
-              <p className='text-sm text-muted-foreground'>
-                {p.subtitle} · {p.year}
-              </p>
-              <p className='mt-1'>{p.description}</p>
-              <p className='mt-1 text-sm text-muted-foreground'>{p.tech.join(' · ')}</p>
-              {p.link?.kind === 'url' ? (
-                <p className='mt-1'>
-                  <a href={p.link.href}>{p.link.label}</a>
-                </p>
-              ) : null}
-              {p.link?.kind === 'post' ? (
-                <p className='mt-1'>
-                  <a href={`/blog/${p.link.slug}`}>{p.link.label}</a>
-                </p>
-              ) : null}
-            </section>
-          ))}
-        </div>
+        {PROJECT_SECTIONS.map((section) => {
+          const items = projects.filter((p) => p.section === section.id);
+          if (!items.length) return null;
+          return (
+            <div key={section.id} className='mt-6'>
+              <h2 className='text-xl font-semibold'>{section.label}</h2>
+              <div className='mt-3 space-y-8'>
+                {items.map((p) => (
+                  <section key={p.id}>
+                    <h3 className='text-lg font-semibold'>{p.title}</h3>
+                    <p className='text-sm text-muted-foreground'>
+                      {p.subtitle} · {p.year}
+                    </p>
+                    <p className='mt-1'>{p.description}</p>
+                    <p className='mt-1 text-sm text-muted-foreground'>{p.tech.join(' · ')}</p>
+                    {p.links?.length ? (
+                      <ul className='mt-1 flex flex-wrap gap-x-4'>
+                        {p.links.map((l) => {
+                          const href = projectLinkHref(l);
+                          return href ? (
+                            <li key={href}>
+                              <a href={href}>{l.label}</a>
+                            </li>
+                          ) : null;
+                        })}
+                      </ul>
+                    ) : null}
+                  </section>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </Shell>
     );
   }

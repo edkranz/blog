@@ -33,8 +33,22 @@ export const hobbies: string[] = siteData.hobbies;
 export const about = siteData.about;
 export const contact = siteData.contact;
 
+export type ProjectLink =
+  | { kind: 'url'; href: string; label: string }
+  | { kind: 'post'; slug: string; label: string }
+  | { kind: 'app'; appId: string; label: string };
+
+/** Projects are grouped under these headings, in this order. */
+export const PROJECT_SECTIONS = [
+  { id: 'work', label: 'Work' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'uni', label: 'University' },
+] as const;
+export type ProjectSection = (typeof PROJECT_SECTIONS)[number]['id'];
+
 export type Project = {
   id: string;
+  section: ProjectSection;
   title: string;
   subtitle: string;
   description: string;
@@ -42,9 +56,12 @@ export type Project = {
   emoji: string;
   accent: string;
   year: string;
-  /** Where the "open" button leads. */
-  link?: { kind: 'url'; href: string; label: string } | { kind: 'post'; slug: string; label: string } | { kind: 'app'; appId: string; label: string };
+  /** The buttons at the bottom of the card: source, demo videos, papers, posts. */
+  links?: ProjectLink[];
 };
+
+/** Where a link points, as an absolute path or URL (posts resolve to their static route). */
+export const projectLinkHref = (l: ProjectLink): string | null => (l.kind === 'url' ? l.href : l.kind === 'post' ? `/blog/${l.slug}` : null);
 
 /** Projects are content: edit `content/projects.json`, not this file. */
 export const projects: Project[] = projectsData as Project[];

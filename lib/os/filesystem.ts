@@ -10,7 +10,7 @@
  * error string), so callers can drop the result straight into the store.
  */
 
-import { education, hobbies, profile, projects, skills, socials, technologies } from '@/lib/eddie';
+import { education, hobbies, profile, projectLinkHref, projects, skills, socials, technologies } from '@/lib/eddie';
 import type { AppId } from './types';
 
 export type FileKind = 'text' | 'markdown' | 'image' | 'link' | 'app';
@@ -44,7 +44,7 @@ export type VNode = VFile | VDir;
 export const HOME = ['home', 'ed'];
 
 /** Bump when the seed content changes — persisted file systems re-seed on mismatch. */
-export const SEED_VERSION = 5;
+export const SEED_VERSION = 6;
 
 // ---- builders -------------------------------------------------------------
 
@@ -129,7 +129,7 @@ const projectMd = (p: (typeof projects)[number]): string =>
     p.description,
     '',
     `Tech: ${p.tech.join(', ')}`,
-    p.link ? `Link: ${p.link.kind === 'url' ? p.link.href : p.link.label}` : '',
+    ...(p.links ?? []).map((l) => `${l.label}: ${projectLinkHref(l) ?? l.label}`),
   ]
     .filter(Boolean)
     .join('\n');

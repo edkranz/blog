@@ -1,6 +1,87 @@
 [
   {
+    "id": "apa-beryl",
+    "section": "work",
+    "title": "Beryl",
+    "subtitle": "Australian Payroll Association · SSW",
+    "description": "The Australian Payroll Association's AI payroll agent. It answers only from APA's vetted knowledge base and live government pages, rewrites questions to strip hidden assumptions, hands anything that looks like legal advice to a human specialist, and is scored weekly against APA's experts. Won AI Innovator (Accountancy Services) at the 2025 Australian AI Awards.",
+    "tech": [
+      "Azure OpenAI",
+      "RAG",
+      "AI Agents",
+      ".NET",
+      "Azure Service Bus"
+    ],
+    "emoji": "💸",
+    "accent": "var(--brand-green)",
+    "year": "2025",
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://www.youtube.com/watch?v=JM7bfGesWlQ",
+        "label": "Case study video"
+      },
+      {
+        "kind": "url",
+        "href": "https://www.ssw.com.au/company/clients/australian-payroll-association",
+        "label": "Case study"
+      },
+      {
+        "kind": "url",
+        "href": "https://www.austpayroll.com.au/beryl",
+        "label": "Meet Beryl"
+      }
+    ]
+  },
+  {
+    "id": "eddy",
+    "section": "projects",
+    "title": "Eddy",
+    "subtitle": "Training app with a Claude coach",
+    "description": "An all-in-one training app for strength, calisthenics, recovery and protein. A training engine tracks per-muscle recovery and weekly sets; Claude plans the sessions over MCP and they land on the app's Today screen. Syncs with Strava through a small token gateway.",
+    "tech": [
+      "SwiftUI",
+      "Cloudflare Workers",
+      "D1",
+      "Hono",
+      "MCP",
+      "Claude"
+    ],
+    "emoji": "🏋️",
+    "accent": "var(--brand-orange)",
+    "year": "2026"
+  },
+  {
+    "id": "oxide",
+    "section": "projects",
+    "title": "Oxide",
+    "subtitle": "A super light text editor",
+    "description": "A text editor that opens instantly, highlights code and formats on save. Multiple cursors, live find and replace with regex, incremental syntax highlighting. Ships for macOS, Windows and Linux, with a Homebrew cask.",
+    "tech": [
+      "Rust",
+      "syntect",
+      "GitHub Actions",
+      "Homebrew"
+    ],
+    "emoji": "🦀",
+    "accent": "var(--brand-red)",
+    "year": "2026",
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/oxide",
+        "label": "View source"
+      },
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/oxide/releases/latest",
+        "label": "Download"
+      }
+    ]
+  },
+  {
     "id": "this-website",
+    "section": "projects",
     "title": "This Website",
     "subtitle": "A desktop in your browser",
     "description": "A personal site reimagined as a desktop environment: a draggable window manager, dock, terminal and games, built from scratch.",
@@ -13,91 +94,190 @@
       "Zustand"
     ],
     "emoji": "🖥️",
-    "accent": "var(--brand-red)",
+    "accent": "var(--brand-blue)",
     "year": "2026",
-    "link": {
-      "kind": "url",
-      "href": "https://github.com/edkranz/blog",
-      "label": "View source"
-    }
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/blog",
+        "label": "View source"
+      }
+    ]
   },
   {
-    "id": "ai-bug-reporting",
-    "title": "AI Bug-Reporting Workflow",
-    "subtitle": "YakShaver × Cursor",
-    "description": "A hands-off maintenance loop: record a 15-second clip of a bug, let AI write the backlog item, let an agent fix it, and review the PR preview, sometimes from a motorbike.",
+    "id": "wtfu",
+    "section": "projects",
+    "title": "WTFU",
+    "subtitle": "Wake the f*** up",
+    "description": "An iPhone alarm that keeps ringing until you get out of bed and scan a registered NFC tag, barcode or QR code.",
     "tech": [
-      "YakShaver",
-      "Cursor",
-      "AI Agents",
-      "PR Previews"
+      "SwiftUI",
+      "AlarmKit",
+      "Core NFC",
+      "Xcode Cloud"
     ],
-    "emoji": "🐛",
+    "emoji": "⏰",
+    "accent": "var(--brand-yellow)",
+    "year": "2026"
+  },
+  {
+    "id": "lime-strava-sync",
+    "section": "projects",
+    "title": "Lime → Strava",
+    "subtitle": "Reverse-engineered rider API",
+    "description": "Lime has no public API, so I documented the app's private one and built a sync on top of it. Every bike or scooter ride lands on Strava as a GPS activity with the route drawn on the map, run unattended from a Cloudflare Worker.",
+    "tech": [
+      "Python",
+      "Cloudflare Workers",
+      "Strava API",
+      "Reverse engineering"
+    ],
+    "emoji": "🛴",
+    "accent": "var(--brand-green)",
+    "year": "2026",
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/lime-strava-sync",
+        "label": "View source"
+      }
+    ]
+  },
+  {
+    "id": "saved-you-20-minutes",
+    "section": "projects",
+    "title": "Saved You 20 Minutes",
+    "subtitle": "Browser extension",
+    "description": "Hover a YouTube thumbnail, click Worth it?, and an LLM reads the transcript to give you the payoff the title was dangling, a WORTH IT / SKIM IT / SKIP IT verdict, and the two or three things the video actually says.",
+    "tech": [
+      "WebExtensions",
+      "JavaScript",
+      "Claude",
+      "OpenAI"
+    ],
+    "emoji": "⏱️",
+    "accent": "var(--brand-purple)",
+    "year": "2026",
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/savedyou20minutes",
+        "label": "View source"
+      }
+    ]
+  },
+  {
+    "id": "cert-tracker",
+    "section": "projects",
+    "title": "Cert Tracker",
+    "subtitle": "GitHub and Azure exam prep",
+    "description": "A study and quiz site for the GH-600, GH-100, GH-300 and AI-103 certifications: every unit of the official learning paths, every published objective covered by at least two questions, and a domain-weighted mock exam per cert.",
+    "tech": [
+      "JavaScript",
+      "GitHub Pages"
+    ],
+    "emoji": "🎓",
     "accent": "var(--brand-blue)",
-    "year": "2025",
-    "link": {
-      "kind": "post",
-      "slug": "ai-bug-reporting-workflow",
-      "label": "Read the post"
-    }
+    "year": "2026",
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://edkranz.github.io/ms-exam-prep/",
+        "label": "Open the site"
+      },
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/ms-exam-prep",
+        "label": "View source"
+      }
+    ]
   },
   {
     "id": "impossible-spaces",
+    "section": "uni",
     "title": "Impossible Spaces",
     "subtitle": "Honours thesis · VR",
-    "description": "Research into portal redirection in Virtual Reality using impossible spaces, letting users walk through environments larger than the room they stand in.",
+    "description": "Overlapping rooms joined by portals, so you can physically walk through a virtual world far bigger than the room you stand in. The thesis maps every known impossible-space technique and introduces Impossidraw, a web tool for drawing impossible floor plans and exporting them as 3D models for Unity.",
     "tech": [
-      "VR",
       "Unity",
-      "Research",
-      "Spatial Computing"
+      "VR",
+      "React",
+      "three.js",
+      "Konva"
     ],
     "emoji": "🥽",
     "accent": "var(--brand-purple)",
+    "year": "2025",
+    "links": [
+      {
+        "kind": "url",
+        "href": "/papers/expanding-reality-with-virtual-impossible-spaces.pdf",
+        "label": "Thesis"
+      },
+      {
+        "kind": "url",
+        "href": "https://www.youtube.com/watch?v=JELkOCyqP0Q",
+        "label": "VR demo"
+      },
+      {
+        "kind": "url",
+        "href": "https://www.youtube.com/watch?v=knKECnFuyM8",
+        "label": "Built with Impossidraw"
+      },
+      {
+        "kind": "url",
+        "href": "https://www.youtube.com/watch?v=ScaakoghDn8",
+        "label": "Impossidraw talk"
+      },
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/impossidraw",
+        "label": "Impossidraw source"
+      }
+    ]
+  },
+  {
+    "id": "head-controlled-flying",
+    "section": "uni",
+    "title": "Head-Controlled Flying",
+    "subtitle": "VR locomotion",
+    "description": "Flying through a virtual world steered by head movement alone, no controllers.",
+    "tech": [
+      "VR",
+      "Locomotion"
+    ],
+    "emoji": "🕊️",
+    "accent": "var(--brand-blue)",
     "year": "2024",
-    "link": {
-      "kind": "url",
-      "href": "https://www.sydney.edu.au/",
-      "label": "University of Sydney"
-    }
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://www.youtube.com/watch?v=oozpB-iFJQo",
+        "label": "Watch"
+      }
+    ]
   },
   {
-    "id": "ai-at-ssw",
-    "title": "AI Consulting @ SSW",
-    "subtitle": "Client delivery",
-    "description": "Supercharging existing applications with AI for SSW clients, from Azure OpenAI integrations to streamlining content with headless CMS.",
+    "id": "kryptochat",
+    "section": "uni",
+    "title": "Kryptochat",
+    "subtitle": "First-year web app",
+    "description": "A small messaging app that demonstrates Diffie-Hellman key exchange. Private keys never leave the browser; the server only ever sees public keys and ciphertext.",
     "tech": [
-      "Azure OpenAI",
-      ".NET",
-      "Angular",
-      "Agile"
+      "Python",
+      "Flask",
+      "SQLAlchemy",
+      "Cryptography"
     ],
-    "emoji": "🤖",
-    "accent": "var(--brand-green)",
-    "year": "2023+",
-    "link": {
-      "kind": "url",
-      "href": "https://www.ssw.com.au/people/eddie-kranz/",
-      "label": "SSW profile"
-    }
-  },
-  {
-    "id": "maker-bench",
-    "title": "The Maker Bench",
-    "subtitle": "Off the keyboard",
-    "description": "When the IDE closes, the workshop opens: motorcycles, bicycles, 3D printing and woodworking. Hands-on problem solving keeps the mind sharp.",
-    "tech": [
-      "Motorcycles",
-      "3D Printing",
-      "Woodworking"
-    ],
-    "emoji": "🏍️",
-    "accent": "var(--brand-yellow)",
-    "year": "Always",
-    "link": {
-      "kind": "url",
-      "href": "https://www.youtube.com/@eddiekranz",
-      "label": "On YouTube"
-    }
+    "emoji": "🔐",
+    "accent": "var(--brand-red)",
+    "year": "2021",
+    "links": [
+      {
+        "kind": "url",
+        "href": "https://github.com/edkranz/kryptochat",
+        "label": "View source"
+      }
+    ]
   }
 ]
