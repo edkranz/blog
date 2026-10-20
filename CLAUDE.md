@@ -196,8 +196,8 @@ OS-specific utilities (`wp-*` wallpapers, `os-window-shadow`, `btn-chunky`, `crt
 App icons are generated **retro pixel-art PNGs** at `public/icons/<iconId>.png`, rendered by `AppIcon`
 (`components/os/icons.tsx`); the SVG glyphs in that file are now an unused fallback. Pixel-art wallpapers
 live in `public/wallpapers/` (`wp-retro` / `wp-retro-night`, the defaults). The favicon is the mascot
-(`/icons/face.png`). Regenerate via the `generate-image` skill (Nano Banana Pro) — keep icons **full-bleed
-square** (rounded in CSS), then downsize/optimize (`mogrify -resize 256x256 -strip`, wallpapers → jpg).
+(`/icons/face.png`). Regenerate via the `generate-image` skill — keep icons **full-bleed
+square** with no drawn frame or bevel (the corners are rounded in CSS, so a baked-in border never lines up), then downsize/optimize (`mogrify -resize 256x256 -strip`, wallpapers → jpg).
 
 ### Adding an app
 
