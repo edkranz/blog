@@ -22,6 +22,8 @@ const ContactApp = dynamic(() => import('./contact-app').then((m) => m.ContactAp
 const SettingsApp = dynamic(() => import('./settings-app').then((m) => m.SettingsApp), { ssr: false, loading });
 const TrashApp = dynamic(() => import('./trash-app').then((m) => m.TrashApp), { ssr: false, loading });
 const EditorApp = dynamic(() => import('./editor/editor-app').then((m) => m.EditorApp), { ssr: false, loading });
+const PreviewApp = dynamic(() => import('./preview-app').then((m) => m.PreviewApp), { ssr: false, loading });
+const VideoApp = dynamic(() => import('./video-app').then((m) => m.VideoApp), { ssr: false, loading });
 const TodoApp = dynamic(() => import('./todo-app').then((m) => m.TodoApp), { ssr: false, loading });
 
 export const APP_REGISTRY: Record<AppId, (props: AppContentProps) => React.ReactNode> = {
@@ -39,4 +41,6 @@ export const APP_REGISTRY: Record<AppId, (props: AppContentProps) => React.React
   settings: () => <SettingsApp />,
   trash: () => <TrashApp />,
   editor: (p) => <EditorApp win={p.win} />,
+  video: (p) => <VideoApp win={p.win} />,
+  preview: (p) => <PreviewApp win={p.win} />,
 };

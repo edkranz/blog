@@ -155,6 +155,28 @@ export const APP_META: Record<AppId, AppMeta> = {
     dock: false,
     desktop: false,
   },
+  video: {
+    id: 'video',
+    name: 'Video',
+    iconId: 'video',
+    accent: '#e5322d',
+    defaultSize: { w: 800, h: 488 },
+    minSize: { w: 360, h: 240 },
+    single: false,
+    dock: false,
+    desktop: false,
+  },
+  preview: {
+    id: 'preview',
+    name: 'Preview',
+    iconId: 'preview',
+    accent: '#1f9e8f',
+    defaultSize: { w: 620, h: 700 },
+    minSize: { w: 360, h: 320 },
+    single: false,
+    dock: false,
+    desktop: false,
+  },
 };
 
 export function getAppMeta(id: AppId): AppMeta {

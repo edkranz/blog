@@ -5,6 +5,8 @@ import { PROJECT_SECTIONS, type Project, type ProjectLink, type ProjectSection }
 import { useAdminStore } from '@/lib/os/admin/store';
 import { useContent } from '@/lib/os/content';
 import { useWindowStore } from '@/lib/os/store';
+import { isLocalPdf, openDocument, openVideo } from '@/lib/os/viewers';
+import { youtubeId } from '@/lib/youtube';
 import { ArrowUpRight, BookOpen, FileText, Play, X } from 'lucide-react';
 import { AddItem, Editable } from '../editable';
 import { AppScroll, Chip } from '../ui';
@@ -15,7 +17,7 @@ const sectionOf = (p: Project): ProjectSection => p.section ?? 'projects';
 
 function LinkIcon({ link }: { link: ProjectLink }) {
   if (link.kind === 'post') return <BookOpen size={15} />;
-  if (link.kind === 'url' && /youtube\.com|youtu\.be/.test(link.href)) return <Play size={15} />;
+  if (link.kind === 'url' && youtubeId(link.href)) return <Play size={15} />;
   if (link.kind === 'url' && link.href.endsWith('.pdf')) return <FileText size={15} />;
   return <ArrowUpRight size={15} />;
 }
@@ -25,7 +27,10 @@ export function ProjectsApp() {
   const { projects, editing } = useContent();
 
   const openLink = (p: Project, link: ProjectLink) => {
-    if (link.kind === 'url') window.open(link.href, '_blank', 'noopener,noreferrer');
+    const video = link.kind === 'url' ? youtubeId(link.href) : null;
+    if (video) openVideo(video, `${p.title} · ${link.label}`);
+    else if (link.kind === 'url' && isLocalPdf(link.href)) openDocument(link.href, `${p.title} · ${link.label}`);
+    else if (link.kind === 'url') window.open(link.href, '_blank', 'noopener,noreferrer');
     else if (link.kind === 'post') openApp('blog', { props: { slug: link.slug }, title: 'Blog' });
     else openApp(link.appId as Parameters<typeof openApp>[0]);
   };

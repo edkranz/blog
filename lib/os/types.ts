@@ -12,9 +12,27 @@ export type AppId =
   | 'todo'
   | 'settings'
   | 'trash'
-  | 'editor';
+  | 'editor'
+  | 'video'
+  | 'preview';
 
-export type IconId = 'face' | 'user' | 'monogram' | 'book' | 'grid' | 'terminal' | 'files' | 'mine' | 'tetris' | 'doom' | 'mail' | 'todo' | 'gear' | 'trash';
+export type IconId =
+  | 'face'
+  | 'user'
+  | 'monogram'
+  | 'book'
+  | 'grid'
+  | 'terminal'
+  | 'files'
+  | 'mine'
+  | 'tetris'
+  | 'doom'
+  | 'mail'
+  | 'todo'
+  | 'gear'
+  | 'trash'
+  | 'video'
+  | 'preview';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 

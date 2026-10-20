@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation';
 type Params = { params: Promise<{ segments: string[] }> };
 
 // Apps with no route of their own: Welcome is the home page, the Editor only exists in /admin.
-const HIDDEN_APPS = new Set(['welcome', 'editor']);
+const HIDDEN_APPS = new Set(['welcome', 'editor', 'video', 'preview']);
 
 // Prerender a page for every app route (/about, /blog, …) and every post (/blog/<slug>).
 export function generateStaticParams() {

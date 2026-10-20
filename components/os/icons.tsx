@@ -77,6 +77,20 @@ export const MailIcon = (p: SVG) => (
   </svg>
 );
 
+export const VideoIcon = (p: SVG) => (
+  <svg {...base(p)}>
+    <rect x='3' y='5.5' width='18' height='13' rx='2.4' />
+    <path d='M10 9.2v5.6l4.8-2.8z' />
+  </svg>
+);
+
+export const PreviewIcon = (p: SVG) => (
+  <svg {...base(p)}>
+    <path d='M6 3h8.5L19 7.5V21H6z' />
+    <path d='M14.5 3v4.5H19M9 11.5h7M9 14.5h7M9 17.5h4.5' />
+  </svg>
+);
+
 export const GearIcon = (p: SVG) => (
   <svg {...base(p)}>
     <circle cx='12' cy='12' r='3.2' />
@@ -138,6 +152,8 @@ export const ICONS: Record<IconId, (p: SVG) => React.JSX.Element> = {
   todo: TodoIcon,
   gear: GearIcon,
   trash: TrashIcon,
+  video: VideoIcon,
+  preview: PreviewIcon,
 };
 
 /** A rounded retro app-icon tile rendered from a generated pixel-art PNG at /public/icons/<iconId>.png. */

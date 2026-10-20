@@ -124,6 +124,13 @@ REST API with no token (60 req/hour/IP, so results are cached in `sessionStorage
 cache is served when GitHub is unreachable). Open issues are the todo list, closed ones the Done section;
 PRs are filtered out. "Suggest a feature" is a prefilled `issues/new` link. Also `todo` in the terminal.
 
+### Video and Preview (`components/os/apps/video-app.tsx`, `preview-app.tsx`, `lib/os/viewers.ts`)
+
+Hidden viewer apps (no dock/desktop icon, no route): Video plays a YouTube embed (`youtube-nocookie.com`), Preview shows a
+same-origin PDF (e.g. `public/papers/`) in the browser's PDF viewer. `openVideo(id, title)` / `openDocument(src, title)`
+open one window per item and re-focus it if it is already open. The Projects app sends YouTube links (`youtubeId()` in
+`lib/youtube.ts`) and local `.pdf` links there instead of a new tab.
+
 ### Doom (`components/os/apps/doom-app.tsx`, `public/doom/`)
 
 DOOM 1.9 **shareware** running under **js-dos v7** (DOSBox → WebAssembly, GPL-2.0) inside an isolated

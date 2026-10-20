@@ -5,6 +5,8 @@ import type { AppId } from './types';
 export function pathForWindow(appId: AppId | null | undefined, slug?: string | null): string {
   if (!appId || appId === 'welcome') return '/';
   if (appId === 'blog' && slug) return `/blog/${slug}`;
+  // Videos and documents have no route of their own; they are opened from Projects.
+  if (appId === 'video' || appId === 'preview') return '/projects';
   return `/${appId}`;
 }
 

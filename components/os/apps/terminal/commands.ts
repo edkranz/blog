@@ -31,7 +31,7 @@ import { C, type Cmd, type CmdGroup, type Ctx, type Env, type Line, out } from '
 
 const pick = <T>(xs: T[]): T => xs[Math.floor(Math.random() * xs.length)];
 const pidOf = (winId: string) => 1000 + Number(winId.slice(winId.lastIndexOf('-') + 1));
-const APP_IDS: AppId[] = (Object.keys(APP_META) as AppId[]).filter((id) => id !== 'editor');
+const APP_IDS: AppId[] = (Object.keys(APP_META) as AppId[]).filter((id) => id !== 'editor' && id !== 'video' && id !== 'preview');
 
 /** Run a script body line by line (echoing each line unless `quiet`). */
 export function runScript(content: string, env: Env, quiet = false): void {
