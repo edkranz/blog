@@ -11,7 +11,7 @@ tags:
   - tag: content/tags/side-projects.mdx
 ---
 
-my colleague brady built his own web browser. [a whole browser](https://github.com/bradystroud/browser): chromium in a native swift/appkit shell, with proper profiles and rules for which links open where.
+my colleague Brady built his own web browser. [a whole browser](https://github.com/bradystroud/browser): Chromium in a native Swift/AppKit shell, with proper profiles and rules for which links open where.
 
 i asked him why. there wasn't really an answer. the answer is just "because i can".
 
@@ -19,19 +19,19 @@ and that's sort of where we are now. building software got so cheap that "should
 
 here's what i've been building.
 
-### eddy: my workout app
+### Eddy: my workout app
 
-i used hevy for ages. then i wanted to plug it into claude, and found out mcp access is behind a subscription. so i built my own.
+i used Hevy for ages. then i wanted to plug it into Claude, and found out MCP access is behind a subscription. so i built my own.
 
 building my own means it only does what i care about: protein tracking, weekly mobility, calisthenics progressions, grease the groove, and normal gym sessions. no social feed, no streaks, no upsell.
 
-![the body map and today screen](/uploads/posts/build-your-own-software/eddy-body-today.jpg "body map on the left, today's plan on the right")
+![the body map and today screen](/uploads/posts/build-your-own-software/eddy-body-today.jpg "the body map on the left, today's plan on the right")
 
 the part i'm most excited about is the **digital twin muscle map**. every hard set you log adds fatigue to the muscles it hits (half for the helpers), and that fatigue decays exponentially. big leg muscles recover slower than biceps. here's the actual model running live, at 4 hours a second. click a muscle to give it a workout:
 
 ::sketch{name=recovery height=300}
 
-the other half is the mcp. geoffrey huntley has a great post called [don't waste your back pressure](https://ghuntley.com/pressure/): agents do much better work when the system pushes back on them with automated checks. so instead of a giant markdown file of "here's my gym, here's my injuries, please remember i only have a pull-up bar on tuesdays", eddy stores as much as possible as structured data: muscles, recovery, equipment profiles per location, which days i'm at which gym. when claude writes a plan, the engine checks it and pushes back deterministically:
+the other half is the MCP. Geoffrey Huntley has a great post called [don't waste your back pressure](https://ghuntley.com/pressure/): agents do much better work when the system pushes back on them with automated checks. so instead of a giant markdown file of "here's my gym, here's my injuries, please remember i only have a pull-up bar on Tuesdays", Eddy stores as much as possible as structured data: muscles, recovery, equipment profiles per location, which days i'm at which gym. when Claude writes a plan, the engine checks it and pushes back deterministically:
 
 ```json
 {
@@ -50,66 +50,70 @@ the other half is the mcp. geoffrey huntley has a great post called [don't waste
 }
 ```
 
-claude fixes the plan until the warnings are gone. no vibes, just validation.
+Claude fixes the plan until the warnings are gone. no vibes, just validation.
 
-and the backend runs on cloudflare workers and d1, on the free tier. so even the "saas" bits of a personal app can be maintained for $0. +1 shoutout to cloudflare, love ya.
+and the backend runs on Cloudflare Workers and D1, on the free tier. so even the "SaaS" bits of a personal app can be maintained for $0. +1 shoutout to Cloudflare, love ya.
 
-### wtfu: wake the f\*\*\* up
+### WTFU: wake the f\*\*\* up
 
-back when i had an android, i used an alarm app that wouldn't turn off until you scanned a barcode. so you have to get out of bed and walk to the bathroom to scan your toothpaste. by then you're awake, and you're not getting back into bed.
+back when i had an Android, i used an alarm app that wouldn't turn off until you scanned a barcode. so you have to get out of bed and walk to the bathroom to scan your toothpaste. by then you're awake, and you're not getting back into bed.
 
-this was impossible on ios until apple opened up alarms to developers with alarmkit. a few apps have done it since, and they all want a subscription. so, why not.
+this was impossible on iOS until Apple opened up alarms to developers with AlarmKit. a few apps have done it since, and they all want a subscription. so, why not.
 
-![wtfu](/uploads/posts/build-your-own-software/wtfu.jpg "ring, scan, good morning")
+![WTFU](/uploads/posts/build-your-own-software/wtfu.jpg "ring, scan, good morning")
 
-wtfu rings until you scan an nfc tag, a barcode or a qr code. no backend, no account, nothing to maintain, so this one is actually heading to the app store.
+WTFU rings until you scan an NFC tag, a barcode or a QR code. no backend, no account, nothing to maintain, so this one is actually heading to the App Store.
 
-### oxide: a text editor
+### Oxide: a text editor
 
-we don't hand-edit much text anymore. but it's still silly to boot a whole ide to change one line of a json config. i used sublime for this, and the nag to buy a licence was enough to make me build my own.
+we don't hand-edit much text anymore. but it's still silly to boot a whole IDE to change one line of a JSON config. i used Sublime Text for this, and the nag to buy a licence was enough to make me build my own.
 
-![oxide](/uploads/posts/build-your-own-software/oxide.png "oxide editing its own source")
+![Oxide](/uploads/posts/build-your-own-software/oxide.png "Oxide editing its own source")
 
 ```bash
 brew install --cask edkranz/tap/oxide
 ox ~/.config/whatever.json
 ```
 
-about 100 ms from launch to first frame, under 10 ms to open a file in a running window, one 5.6 MB binary, zero cpu when idle. features get added when i need them and not before.
+about 100 ms from launch to first frame, under 10 ms to open a file in a running window, one 5.6 MB binary, zero CPU when idle. features get added when i need them and not before.
 
-rust is my default for apps like this now. even dhh, the patron saint of developer-happiness languages, is reportedly rewriting hey's backend in rust. languages full of sugar were designed for humans to enjoy writing. rust was always hard for humans to write, but humans don't write the code anymore. what's left is fast, safe and cross platform, and after a couple of performance passes with an agent it runs like a dream. [it's on github](https://github.com/edkranz/oxide).
+Rust is my default for apps like this now. even DHH, the patron saint of developer-happiness languages, stood up at [Rails World](https://www.youtube.com/watch?v=vDjW_dRyKXY) and said writing code by hand no longer makes economic sense, and that HEY's mail server is being rewritten in Rust by agents. Fireship had thoughts:
 
-### scribe: otter, but local
+::youtube{id=OuNKBjuV7A4}
 
-a native mac app for transcribing meetings i record myself. parakeet for the transcription, [fluidaudio](https://github.com/FluidInference/FluidAudio)'s diarization to work out who said what, click any word to jump the audio there, export to whatever. fully offline, no teams dependency, no per-minute fees.
+languages full of sugar were designed for humans to enjoy writing. Rust was always hard for humans to write, but humans don't write the code anymore. what's left is fast, safe and cross platform, and after a couple of performance passes with an agent it runs like a dream. [it's on GitHub](https://github.com/edkranz/oxide).
+
+### Scribe: Otter, but local
+
+a native Mac app for transcribing meetings i record myself. Parakeet for the transcription, [FluidAudio](https://github.com/FluidInference/FluidAudio)'s diarization to work out who said what, click any word to jump the audio there, export to whatever. fully offline, no Teams dependency, no per-minute fees.
 
 there are a million products like this. but this one's mine.
 
 ### this blog: visual editing
 
-the site you're on now has a visual editor. i'd like to credit [tina](https://tina.io) here: i agree with a lot of its ideas, especially keeping content in git and editing it through a github workflow. but tina's visual editing wants every page to be a route that fetches its content through tina's own api, and eddie os is one big client-side app where windows aren't pages. plus the branch-based editorial workflow sits on a paid plan.
+the site you're on now has a visual editor. i'd like to credit [Tina](https://tina.io) here: i agree with a lot of its ideas, especially keeping content in git and editing it through a GitHub workflow. but Tina's visual editing wants every page to be a route that fetches its content through Tina's own API, and Eddie OS is one big client-side app where windows aren't pages. plus the branch-based editorial workflow sits on a paid plan.
 
-so i stole the idea and built it into the os:
+so i stole the idea and built it into the OS:
 
-::video{src=/uploads/posts/build-your-own-software/admin.mp4}
+::video{src=/uploads/posts/build-your-own-software/admin.mp4 poster=/uploads/posts/build-your-own-software/admin-poster.jpg}
 
-go to /admin, sign in with github, click any text and edit it in place, save to a drafts branch, deploy a vercel preview, and push to main when you're happy. chef's kiss.
+go to /admin, sign in with GitHub, click any text and edit it in place, save to a drafts branch, deploy a Vercel preview, and push to main when you're happy. chef's kiss.
 
 ### the smaller stuff
 
-- [**savedyou20minutes**](https://github.com/edkranz/savedyou20minutes): a browser extension that reads a youtube video's transcript and tells you whether it's worth watching, and what the clickbait title was hiding. spoiling the video is the point.
-- [**intentblock**](https://github.com/edkranz/intentblock): blocks distracting sites when i type them in myself, but lets me through (for a few clicks) when i arrive from a link somewhere else.
-- [**lime-strava-sync**](https://github.com/edkranz/lime-strava-sync): lime has no public api, so this pulls my scooter and bike rides out of the app's private one and posts them to strava with the route on the map. it runs on, you guessed it, a cloudflare worker.
-- **shuriken**: a native mac tool for reading and tuning the shimano motor on my e-bike, built from a protocol spec claude and i worked out from the windows-only tools. it hasn't touched real hardware yet, so it might also brick my bike. we'll see.
+- [**savedyou20minutes**](https://github.com/edkranz/savedyou20minutes): a browser extension that reads a YouTube video's transcript and tells you whether it's worth watching, and what the clickbait title was hiding. spoiling the video is the point.
+- [**IntentBlock**](https://github.com/edkranz/intentblock): blocks distracting sites when i type them in myself, but lets me through (for a few clicks) when i arrive from a link somewhere else.
+- [**lime-strava-sync**](https://github.com/edkranz/lime-strava-sync): Lime has no public API, so this pulls my scooter and bike rides out of the app's private one and posts them to Strava with the route on the map. it runs on, you guessed it, a Cloudflare Worker.
+- **Shuriken**: a native Mac tool for reading and tuning the Shimano motor on my e-bike, built from a protocol spec Claude and i worked out from the Windows-only tools. it hasn't touched real hardware yet, so it might also brick my bike. we'll see.
 
 ### next: a launcher
 
-i love raycast. but i can feel the bloat creeping in, and i don't love being the product. so i'm building my own raycast/alfred, in rust again, with only the features i use and room to extend it later.
+i love Raycast. but i can feel the bloat creeping in, and i don't love being the product. so i'm building my own Raycast/Alfred, in Rust again, with only the features i use and room to extend it later.
 
 ### the catch
 
-the one subscription i do pay for is claude. the max 5x plan is $100 usd a month, and each of these apps has burned well over $1k worth of tokens at api prices. the plan covers way more than that every month.
+the one subscription i do pay for is Claude. the Max 5x plan is $100 USD a month, and each of these apps has burned well over $1k worth of tokens at API prices. the plan covers way more than that every month.
 
 that's a subsidy, and subsidies end. if building like this gets genuinely expensive, this whole mindset might lose its shine. but for now, the cost of building your own software has dropped to roughly nothing, and i'm going to keep building things just because i can.
 
-next up, maybe: how claude is helping me dig through archives to restore a citizenship my family lost in the 1940s. if it works, it's a hell of a story.
+next up, maybe: how Claude is helping me dig through archives to restore a citizenship my family lost in the 1940s. if it works, it's a hell of a story.
