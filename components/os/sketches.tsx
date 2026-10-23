@@ -237,16 +237,141 @@ function DvdBounce() {
   return <canvas ref={ref} className='h-full w-full' />;
 }
 
+// Eddy's muscle fatigue model: each hard set adds fatigue that decays as exp(-t/τ),
+// recovery = 100 × (1 − F/C). Clicking a muscle logs 4 sets at RIR 1 (synergists get half).
+function Recovery() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const C = 8;
+    const WORKOUT = 4 * 0.9;
+    const HOURS_PER_SEC = 4;
+    const TOP = 40;
+    const muscles = [
+      { name: 'Chest', tau: 30, syn: ['Triceps', 'Shoulders'], f: 3 },
+      { name: 'Back', tau: 30, syn: ['Biceps'], f: 0 },
+      { name: 'Shoulders', tau: 24, syn: ['Triceps'], f: 1.5 },
+      { name: 'Biceps', tau: 24, syn: [], f: 0 },
+      { name: 'Triceps', tau: 24, syn: [], f: 2.5 },
+      { name: 'Quads', tau: 36, syn: ['Glutes'], f: 5 },
+      { name: 'Hamstrings', tau: 36, syn: ['Glutes'], f: 1 },
+      { name: 'Glutes', tau: 36, syn: ['Hamstrings'], f: 3 },
+    ].map((m) => ({ ...m, flash: 0 }));
+    let hours = 0;
+    let lastT = 0;
+    let rowH = 28;
+    let hover = -1;
+
+    const rowAt = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      const i = Math.floor((e.clientY - r.top - TOP) / rowH);
+      return i >= 0 && i < muscles.length ? i : -1;
+    };
+    const onClick = (e: PointerEvent) => {
+      const i = rowAt(e);
+      if (i < 0) return;
+      const m = muscles[i];
+      m.f += WORKOUT;
+      m.flash = 1;
+      for (const s of m.syn) {
+        const sm = muscles.find((x) => x.name === s);
+        if (sm) sm.f += WORKOUT * 0.5;
+      }
+    };
+    const onMove = (e: PointerEvent) => {
+      hover = rowAt(e);
+    };
+    const onLeave = () => {
+      hover = -1;
+    };
+    canvas.addEventListener('pointerdown', onClick);
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerleave', onLeave);
+
+    // Red → yellow → green, the same ramp as the app's body map.
+    const ramp = (p: number) => {
+      const lerp = (a: number[], b: number[], k: number) => a.map((v, j) => Math.round(v + (b[j] - v) * k));
+      const red = [245, 78, 0];
+      const yellow = [249, 189, 43];
+      const green = [45, 189, 132];
+      const c = p < 0.5 ? lerp(red, yellow, p / 0.5) : lerp(yellow, green, (p - 0.5) / 0.5);
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    };
+
+    const stop = runCanvas(canvas, ({ ctx, w, h, t }) => {
+      const dt = Math.min(0.1, t - lastT) * HOURS_PER_SEC;
+      lastT = t;
+      hours += dt;
+      rowH = Math.max(20, (h - TOP - 10) / muscles.length);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      const day = Math.floor(hours / 24);
+      ctx.fillText(`day ${day + 1} · ${String(Math.floor(hours % 24)).padStart(2, '0')}:00`, w - 12, 20);
+
+      const labelW = 92;
+      const pctW = 64;
+      const barX = 12 + labelW;
+      const barW = Math.max(40, w - barX - pctW - 12);
+      muscles.forEach((m, i) => {
+        m.f *= Math.exp(-dt / m.tau);
+        m.flash = Math.max(0, m.flash - 0.04);
+        const rec = Math.max(0, 1 - m.f / C);
+        const y = TOP + i * rowH;
+        const cy = y + rowH / 2;
+        if (i === hover) {
+          ctx.fillStyle = 'rgba(255,255,255,0.05)';
+          ctx.fillRect(0, y, w, rowH);
+        }
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText(m.name, 12, cy);
+        const bh = Math.min(12, rowH * 0.45);
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath();
+        ctx.roundRect(barX, cy - bh / 2, barW, bh, bh / 2);
+        ctx.fill();
+        ctx.fillStyle = ramp(rec);
+        ctx.beginPath();
+        ctx.roundRect(barX, cy - bh / 2, Math.max(bh, barW * rec), bh, bh / 2);
+        ctx.fill();
+        if (m.flash > 0) {
+          ctx.fillStyle = `rgba(255,255,255,${m.flash * 0.35})`;
+          ctx.beginPath();
+          ctx.roundRect(barX, cy - bh / 2, barW, bh, bh / 2);
+          ctx.fill();
+        }
+        ctx.textAlign = 'right';
+        ctx.fillStyle = rec >= 0.85 ? '#2dbd84' : 'rgba(255,255,255,0.6)';
+        ctx.fillText(`${Math.round(rec * 100)}%${rec >= 0.85 ? ' ✓' : '  '}`, w - 12, cy);
+      });
+    });
+    return () => {
+      canvas.removeEventListener('pointerdown', onClick);
+      canvas.removeEventListener('pointermove', onMove);
+      canvas.removeEventListener('pointerleave', onLeave);
+      stop();
+    };
+  }, []);
+  return <canvas ref={ref} className='h-full w-full cursor-pointer' />;
+}
+
 export const SKETCHES: Record<string, () => React.JSX.Element> = {
   particles: Particles,
   life: GameOfLife,
   dvd: DvdBounce,
+  recovery: Recovery,
 };
 
 const HINTS: Record<string, string> = {
   particles: 'Particles',
   life: "Conway's Game of Life",
   dvd: 'Will it ever hit the corner?',
+  recovery: 'recovery = 100 × (1 − Σ fatigue × e^(−t/τ) / C)',
 };
 
 export function SketchFrame({ name, height, caption }: { name?: string; height?: string; caption?: string }) {
