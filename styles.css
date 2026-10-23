@@ -575,3 +575,14 @@
   min-height: 320px;
   padding: 16px 20px;
 }
+/* MDXEditor's code blocks only ship a light CodeMirror theme: flip it for dark mode, hues kept. */
+.eos-mdx.dark-theme .cm-editor {
+  filter: invert(0.9) hue-rotate(180deg);
+}
+.eos-mdx.dark-theme [class*='_codeMirrorToolbar_'] {
+  background: transparent;
+}
+.eos-mdx.dark-theme [class*='_codeMirrorToolbar_'] [class*='_selectTrigger_'] {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
