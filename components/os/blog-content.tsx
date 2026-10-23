@@ -112,6 +112,11 @@ const COMPONENTS = {
       </a>
     );
   },
+  // A lone image renders as a <figure>, which can't sit inside a <p>.
+  p: ({ node, children }: { node?: { children?: { type: string; tagName?: string }[] }; children?: ReactNode }) => {
+    const kids = node?.children?.filter((c) => !(c.type === 'text' && !(c as { value?: string }).value?.trim())) ?? [];
+    return kids.length === 1 && kids[0].tagName === 'img' ? <>{children}</> : <p>{children}</p>;
+  },
   img: ({ src, alt, title }: { src?: string; alt?: string; title?: string }) => (
     <figure>
       <img src={typeof src === 'string' ? src : ''} alt={alt ?? ''} loading='lazy' />
