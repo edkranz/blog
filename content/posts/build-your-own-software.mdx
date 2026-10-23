@@ -1,0 +1,115 @@
+---
+title: Because I Can
+heroImg: null
+excerpt: >-
+  I don't pay for software subscriptions anymore. I just build my own: a workout app, an alarm,
+  a text editor, a transcriber, and now a launcher. None of them are for sale.
+author: content/authors/eddie.md
+date: 2026-10-23T00:00:00.000Z
+tags:
+  - tag: content/tags/ai.mdx
+  - tag: content/tags/side-projects.mdx
+---
+
+my colleague brady built his own web browser. [a whole browser](https://github.com/bradystroud/browser): chromium in a native swift/appkit shell, with proper profiles and rules for which links open where.
+
+i asked him why. there wasn't really an answer. the answer is just "because i can".
+
+and that's sort of where we are now. building software got so cheap that "should this exist?" stopped being a question worth asking. if i want it, i build it. to my own spec, with only the features i care about, and no intention of selling it or chasing users, because anyone else can just build their own too. (i'm still happy to share.)
+
+here's what i've been building.
+
+### eddy: my workout app
+
+i used hevy for ages. then i wanted to plug it into claude, and found out mcp access is behind a subscription. so i built my own.
+
+building my own means it only does what i care about: protein tracking, weekly mobility, calisthenics progressions, grease the groove, and normal gym sessions. no social feed, no streaks, no upsell.
+
+![the body map and today screen](/uploads/posts/build-your-own-software/eddy-body-today.jpg "body map on the left, today's plan on the right")
+
+the part i'm most excited about is the **digital twin muscle map**. every hard set you log adds fatigue to the muscles it hits (half for the helpers), and that fatigue decays exponentially. big leg muscles recover slower than biceps. here's the actual model running live, at 4 hours a second. click a muscle to give it a workout:
+
+::sketch{name=recovery height=300}
+
+the other half is the mcp. geoffrey huntley has a great post called [don't waste your back pressure](https://ghuntley.com/pressure/): agents do much better work when the system pushes back on them with automated checks. so instead of a giant markdown file of "here's my gym, here's my injuries, please remember i only have a pull-up bar on tuesdays", eddy stores as much as possible as structured data: muscles, recovery, equipment profiles per location, which days i'm at which gym. when claude writes a plan, the engine checks it and pushes back deterministically:
+
+```json
+{
+  "warnings": [
+    {
+      "code": "under_recovered",
+      "muscle_id": "quads",
+      "message": "quads projected 61% recovered at Fri 7:00 am (below 85%); reaches 85% around Sat 2:00 pm"
+    },
+    {
+      "code": "equipment_missing",
+      "exercise_id": "pull-up",
+      "message": "Pull-up needs pull-up bar, which is not in the Home profile"
+    }
+  ]
+}
+```
+
+claude fixes the plan until the warnings are gone. no vibes, just validation.
+
+and the backend runs on cloudflare workers and d1, on the free tier. so even the "saas" bits of a personal app can be maintained for $0. +1 shoutout to cloudflare, love ya.
+
+### wtfu: wake the f\*\*\* up
+
+back when i had an android, i used an alarm app that wouldn't turn off until you scanned a barcode. so you have to get out of bed and walk to the bathroom to scan your toothpaste. by then you're awake, and you're not getting back into bed.
+
+this was impossible on ios until apple opened up alarms to developers with alarmkit. a few apps have done it since, and they all want a subscription. so, why not.
+
+![wtfu](/uploads/posts/build-your-own-software/wtfu.jpg "ring, scan, good morning")
+
+wtfu rings until you scan an nfc tag, a barcode or a qr code. no backend, no account, nothing to maintain, so this one is actually heading to the app store.
+
+### oxide: a text editor
+
+we don't hand-edit much text anymore. but it's still silly to boot a whole ide to change one line of a json config. i used sublime for this, and the nag to buy a licence was enough to make me build my own.
+
+![oxide](/uploads/posts/build-your-own-software/oxide.png "oxide editing its own source")
+
+```bash
+brew install --cask edkranz/tap/oxide
+ox ~/.config/whatever.json
+```
+
+about 100 ms from launch to first frame, under 10 ms to open a file in a running window, one 5.6 MB binary, zero cpu when idle. features get added when i need them and not before.
+
+rust is my default for apps like this now. even dhh, the patron saint of developer-happiness languages, is reportedly rewriting hey's backend in rust. languages full of sugar were designed for humans to enjoy writing. rust was always hard for humans to write, but humans don't write the code anymore. what's left is fast, safe and cross platform, and after a couple of performance passes with an agent it runs like a dream. [it's on github](https://github.com/edkranz/oxide).
+
+### scribe: otter, but local
+
+a native mac app for transcribing meetings i record myself. parakeet for the transcription, [fluidaudio](https://github.com/FluidInference/FluidAudio)'s diarization to work out who said what, click any word to jump the audio there, export to whatever. fully offline, no teams dependency, no per-minute fees.
+
+there are a million products like this. but this one's mine.
+
+### this blog: visual editing
+
+the site you're on now has a visual editor. i'd like to credit [tina](https://tina.io) here: i agree with a lot of its ideas, especially keeping content in git and editing it through a github workflow. but tina's visual editing wants every page to be a route that fetches its content through tina's own api, and eddie os is one big client-side app where windows aren't pages. plus the branch-based editorial workflow sits on a paid plan.
+
+so i stole the idea and built it into the os:
+
+::video{src=/uploads/posts/build-your-own-software/admin.mp4}
+
+go to /admin, sign in with github, click any text and edit it in place, save to a drafts branch, deploy a vercel preview, and push to main when you're happy. chef's kiss.
+
+### the smaller stuff
+
+- [**savedyou20minutes**](https://github.com/edkranz/savedyou20minutes): a browser extension that reads a youtube video's transcript and tells you whether it's worth watching, and what the clickbait title was hiding. spoiling the video is the point.
+- [**intentblock**](https://github.com/edkranz/intentblock): blocks distracting sites when i type them in myself, but lets me through (for a few clicks) when i arrive from a link somewhere else.
+- [**lime-strava-sync**](https://github.com/edkranz/lime-strava-sync): lime has no public api, so this pulls my scooter and bike rides out of the app's private one and posts them to strava with the route on the map. it runs on, you guessed it, a cloudflare worker.
+- **shuriken**: a native mac tool for reading and tuning the shimano motor on my e-bike, built from a protocol spec claude and i worked out from the windows-only tools. it hasn't touched real hardware yet, so it might also brick my bike. we'll see.
+
+### next: a launcher
+
+i love raycast. but i can feel the bloat creeping in, and i don't love being the product. so i'm building my own raycast/alfred, in rust again, with only the features i use and room to extend it later.
+
+### the catch
+
+the one subscription i do pay for is claude. the max 5x plan is $100 usd a month, and each of these apps has burned well over $1k worth of tokens at api prices. the plan covers way more than that every month.
+
+that's a subsidy, and subsidies end. if building like this gets genuinely expensive, this whole mindset might lose its shine. but for now, the cost of building your own software has dropped to roughly nothing, and i'm going to keep building things just because i can.
+
+next up, maybe: how claude is helping me dig through archives to restore a citizenship my family lost in the 1940s. if it works, it's a hell of a story.
