@@ -44,6 +44,35 @@ const SketchDirective: DirectiveDescriptor = {
   Editor: GenericDirectiveEditor,
 };
 
+// The other directives the reader renders (components/os/blog-content.tsx). MDXEditor throws on a directive
+// with no descriptor, so a post using any of these would not open without them.
+const VideoDirective: DirectiveDescriptor = {
+  name: 'video',
+  type: 'leafDirective',
+  testNode: (node) => node.name === 'video',
+  attributes: ['src', 'poster'],
+  hasChildren: false,
+  Editor: GenericDirectiveEditor,
+};
+
+const YouTubeDirective: DirectiveDescriptor = {
+  name: 'youtube',
+  type: 'leafDirective',
+  testNode: (node) => node.name === 'youtube',
+  attributes: ['id'],
+  hasChildren: false,
+  Editor: GenericDirectiveEditor,
+};
+
+const CalloutDirective: DirectiveDescriptor = {
+  name: 'callout',
+  type: 'containerDirective',
+  testNode: (node) => node.name === 'callout',
+  attributes: ['type'],
+  hasChildren: true,
+  Editor: GenericDirectiveEditor,
+};
+
 const CODE_LANGS: Record<string, string> = {
   '': 'Plain',
   txt: 'Text',
@@ -87,7 +116,7 @@ export default function MarkdownEditor({ markdown, original, dark, onChange, upl
       imagePlugin({ imageUploadHandler: uploadImage, imagePreviewHandler: previewImage }),
       codeBlockPlugin({ defaultCodeBlockLanguage: '' }),
       codeMirrorPlugin({ codeBlockLanguages: CODE_LANGS }),
-      directivesPlugin({ directiveDescriptors: [SketchDirective] }),
+      directivesPlugin({ directiveDescriptors: [SketchDirective, VideoDirective, YouTubeDirective, CalloutDirective] }),
       diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: original }),
       markdownShortcutPlugin(),
       toolbarPlugin({
